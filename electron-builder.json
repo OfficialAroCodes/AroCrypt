@@ -1,0 +1,99 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "com.arocodes.arocrypt",
+  "productName": "AroCrypt",
+  "copyright": "Copyright 2025 AroCodes",
+  "asar": {
+    "smartUnpack": true
+  },
+  "asarUnpack": [
+    "!**/certs/arocrypt.pfx",
+    "!certs/arocrypt.pfx",
+    "!temp-electron-builder.json",
+    "!.env"
+  ],
+  "directories": {
+    "output": "release/${version}"
+  },
+  "publish": [
+    {
+      "provider": "github",
+      "owner": "OfficialAroCodes",
+      "repo": "arocrypt"
+    }
+  ],
+  "files": [
+    "dist-electron/**/*",
+    "dist/**/*",
+    "icons/**/*",
+    "public/**/*",
+    "**/*",
+    "!**/*.ts",
+    "!*.code-workspace",
+    "!**/certs/arocrypt.pfx",
+    "!certs/arocrypt.pfx",
+    "!./certs/arocrypt.pfx",
+    "!**/temp-electron-builder.json",
+    "!temp-electron-builder.json",
+    "!./temp-electron-builder.json",
+    "!**/.env",
+    "!.env",
+    "!./.env",
+    "./scripts/installer.manifest"
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ],
+    "artifactName": "${productName}-Setup-${version}.${ext}",
+    "icon": "icons/icon.ico",
+    "requestedExecutionLevel": "requireAdministrator",
+    "certificateFile": "./certs/arocrypt.pfx",
+    "certificatePassword": "${CERT_PASSWORD}",
+    "forceCodeSigning": true
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": true,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": false,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "installerIcon": "icons/win/icon.ico",
+    "installerHeaderIcon": "icons/win/icon.ico",
+    "uninstallDisplayName": "AroCrypt",
+    "include": "scripts/config.nsi"
+  },
+  "extraResources": [
+    {
+      "from": "public/icons",
+      "to": "icons",
+      "filter": ["**/*"]
+    },
+    {
+      "from": "public/logo",
+      "to": "logo",
+      "filter": ["**/*"]
+    },
+    {
+      "from": "public/other",
+      "to": "other_images",
+      "filter": ["**/*"]
+    },
+    {
+      "from": "certs/arocrypt.crt",
+      "to": "certs/arocrypt.crt"
+    },
+    {
+      "from": "scripts/config.nsi",
+      "to": "scripts/"
+    },
+    {
+      "from": "scripts/installer.manifest",
+      "to": "scripts/"
+    }
+  ]
+}
