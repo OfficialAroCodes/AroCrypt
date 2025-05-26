@@ -1,9 +1,0 @@
-MIT License (Modified)
-
-Copyright (c) 2025 AroCodes
-
-Permission is hereby granted, free of charge, to view the source code of this repository, provided that:
-1. Copying, modifying, or distributing this code is strictly prohibited.
-2. Usage of this code in any derivative works or for commercial purposes is prohibited without prior written permission.
-
-THIS CODE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
