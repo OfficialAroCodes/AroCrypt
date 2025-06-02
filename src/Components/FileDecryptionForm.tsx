@@ -170,33 +170,31 @@ const FileDecryptionForm: React.FC = () => {
                 )
             }
 
-            {
-                decryptedFiles.length > 0 ? (
-                    <>
-                        <div className="SeparatorBox">
-                            <span></span>
-                            <p className="SectionName">{t('decrypted_files_history')}</p>
-                            <span></span>
-                        </div>
-                        <table className={`files_table ${files.length > 0 ? "hide" : ""}`}>
-                            <thead>
-                                <tr>
-                                    <th>{t("original_files")}</th>
-                                    <th>{t("decrypted_files")}</th>
+            {decryptedFiles.length > 0 && (
+                <>
+                    <div className="SeparatorBox">
+                        <span></span>
+                        <p className="SectionName">{t('decrypted_files_history')}</p>
+                        <span></span>
+                    </div>
+                    <table className={`files_table ${files.length > 0 ? "hide" : ""}`}>
+                        <thead>
+                            <tr>
+                                <th>{t("original_files")}</th>
+                                <th>{t("decrypted_files")}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {decryptedFiles.map((file, index) => (
+                                <tr key={index}>
+                                    <td>{file.originalPath.split('\\').pop()}</td>
+                                    <td>{file.decryptedPath.split('\\').pop()}</td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {decryptedFiles.map((file, index) => (
-                                    <tr key={index}>
-                                        <td>{file.originalPath.split('\\').pop()}</td>
-                                        <td>{file.decryptedPath.split('\\').pop()}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </>
-                ) : ''
-            }
+                            ))}
+                        </tbody>
+                    </table>
+                </>
+            )}
         </>
     );
 };

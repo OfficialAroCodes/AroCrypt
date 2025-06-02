@@ -49,7 +49,7 @@
     "extra_security": "Extra Security",
     "change": "Change",
     "unavailable": "Unavailable",
-    "encrypted_files": "Encryption History",
+    "encrypted_files_history": "Encryption History",
     "decrypted_files_history": "Decryption History",
     "files_selected": "{{count}} file(s) selected",
     "encrypt_files": "Encrypt File(s)",
@@ -80,7 +80,7 @@
     "download_install_btn": "Download and Install Update",
     "original_files": "Original File(s)",
     "decrypted_files": "Decrypted File(s)",
-
+    "encrypted_files": "Encrypted File(s)",
     "report_issue": "Report Issue",
     "check_for_updates": "Check for updates",
     "dev_contact": "Contact with Developer"

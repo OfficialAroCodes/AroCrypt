@@ -156,23 +156,25 @@ const FileEncryptionForm: React.FC = () => {
                 <>
                     <div className="SeparatorBox">
                         <span></span>
-                        <p className="SectionName">{t('encrypted_files')}</p>
+                        <p className="SectionName">{t('encrypted_files_history')}</p>
                         <span></span>
                     </div>
-                    <div className={`files_list ${files.length > 0 ? ('small') : ''}`}>
-                        {encryptedFiles.map((file, index) => (
-                            <div key={index} className="encrypted_file_item">
-                                <p className='o_fn'>{file.originalPath.split('\\').pop()}</p>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M5 12l14 0" />
-                                    <path d="M15 16l4 -4" />
-                                    <path d="M15 8l4 4" />
-                                </svg>
-                                <p className='e_fn'>{file.encryptedPath.split('\\').pop()}</p>
-                            </div>
-                        ))}
-                    </div>
+                    <table className={`files_table ${files.length > 0 ? "hide" : ""}`}>
+                        <thead>
+                            <tr>
+                                <th>{t("original_files")}</th>
+                                <th>{t("encrypted_files")}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {encryptedFiles.map((file, index) => (
+                                <tr key={index}>
+                                    <td>{file.originalPath.split('\\').pop()}</td>
+                                    <td>{file.encryptedPath.split('\\').pop()}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </>
             )}
         </>
