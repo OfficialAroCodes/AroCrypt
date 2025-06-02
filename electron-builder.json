@@ -45,7 +45,9 @@
     "target": [
       {
         "target": "nsis",
-        "arch": ["x64"]
+        "arch": [
+          "x64"
+        ]
       }
     ],
     "artifactName": "${productName}-Setup-${version}.${ext}",
@@ -54,6 +56,14 @@
     "certificateFile": "./certs/arocrypt.pfx",
     "certificatePassword": "${CERT_PASSWORD}",
     "forceCodeSigning": true
+  },
+  "linux": {
+    "category": "Utility",
+    "icon": "icons/app.png",
+    "target": [
+      "deb",
+      "AppImage"
+    ]
   },
   "nsis": {
     "oneClick": false,
@@ -71,17 +81,23 @@
     {
       "from": "public/icons",
       "to": "icons",
-      "filter": ["**/*"]
+      "filter": [
+        "**/*"
+      ]
     },
     {
       "from": "public/logo",
       "to": "logo",
-      "filter": ["**/*"]
+      "filter": [
+        "**/*"
+      ]
     },
     {
       "from": "public/other",
       "to": "other_images",
-      "filter": ["**/*"]
+      "filter": [
+        "**/*"
+      ]
     },
     {
       "from": "certs/arocrypt.crt",

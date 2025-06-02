@@ -1,17 +1,32 @@
-/* 
-This file facilitates the secure loading of environment variables from the .env file into the Electron app.
-Ensuring that sensitive information such as API keys, secrets, and passwords remain protected.
-*/
-
-import { build } from "electron-builder";
+import { build, Platform, Arch } from "electron-builder";
 import fs from "fs/promises";
 import dotenv from "dotenv";
 import path from "path";
+import os from "os";
 
 dotenv.config();
 
 async function main() {
-  const certPassword = process.env.CERT_PASSWORD.trim();
+  const platform = os.platform();
+  const isWSL = await fs
+    .readFile("/proc/version", "utf8")
+    .then((content) => content.toLowerCase().includes("microsoft"))
+    .catch(() => false);
+  const cwd = process.cwd();
+
+  const isPathOnWindows = cwd.startsWith("/mnt/c/");
+
+  if (isPathOnWindows && platform === "linux") {
+    console.log(
+      "⚠️ You're running the build inside WSL but on a Windows filesystem path."
+    );
+    console.log(
+      "❌ Cannot build for Linux using Windows paths. Move your project to the Linux filesystem (/home)!"
+    );
+    process.exit(1);
+  }
+
+  const certPassword = process.env.CERT_PASSWORD?.trim() || "";
   const rawConfig = await fs.readFile("./electron-builder.json", "utf-8");
   const config = JSON.parse(rawConfig);
 
@@ -23,8 +38,35 @@ async function main() {
   await fs.writeFile(tempConfigPath, JSON.stringify(config, null, 2));
 
   try {
-    console.log("Building with certificate password...");
-    await build({ config: tempConfigPath });
+    if (isWSL) {
+      console.log(
+        "Detected WSL. Building for Linux (no Windows builds inside WSL)."
+      );
+      await build({
+        config: tempConfigPath,
+        targets: new Map([
+          [Platform.LINUX, new Map([[Arch.x64, ["deb", "AppImage"]]])],
+        ]),
+      });
+    } else if (platform === "linux") {
+      console.log("Running on native Linux. Building for Linux...");
+      await build({
+        config: tempConfigPath,
+        targets: new Map([
+          [Platform.LINUX, new Map([[Arch.x64, ["deb", "AppImage"]]])],
+        ]),
+      });
+    } else if (platform === "win32") {
+      console.log("Running on Windows. Building for Windows...");
+      await build({
+        config: tempConfigPath,
+        targets: new Map([[Platform.WINDOWS, new Map([[Arch.x64, ["nsis"]]])]]),
+      });
+    } else {
+      console.error("Unsupported platform:", platform);
+      process.exit(1);
+    }
+
     console.log("Build succeeded!");
   } catch (err) {
     console.error("Build failed:", err);

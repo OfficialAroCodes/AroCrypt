@@ -1,6 +1,6 @@
 {
-  "name": "arocrpyt",
-  "version": "0.5.1",
+  "name": "arocrypt",
+  "version": "0.5.2",
   "main": "dist-electron/main/index.js",
   "description": "Advanced Encryption and Decryption Application Developed by AroCodes",
   "author": {
