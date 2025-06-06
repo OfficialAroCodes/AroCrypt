@@ -29,7 +29,7 @@
     "electron-updater": "^6.3.9",
     "i18next": "^24.2.1",
     "keytar": "^7.9.0",
-    "lucide-react": "^0.474.0",
+    "lucide-react": "^0.510.0",
     "react-dropzone": "^14.3.5",
     "react-i18next": "^15.4.0",
     "react-redux": "^9.2.0",
