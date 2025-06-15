@@ -13,8 +13,7 @@ import { fileURLToPath } from "node:url";
 import * as os from "os";
 import fs from "fs";
 import path from "path";
-import { saveUniqueKey } from "./utils/KeyService";
-import getKey from "./utils/KeyService";
+import getKey, { savePrivateKey } from "./utils/KeyService";
 import { safeWriteLog } from "./utils/writeLog";
 import { decrypt } from "./utils/decryptText";
 import { encrypt } from "./utils/encryptText";
@@ -23,15 +22,19 @@ import { validateFileDecryption } from "./utils/validateFileDecryption";
 import { decryptFile } from "./utils/decryptFile";
 const { autoUpdater } = pkg;
 import pkg from "electron-updater";
+import hideDataInImage from "./utils/hideDataInImage";
+import extractHiddenData from "./utils/extractHiddenData";
+import moveExtractedFiles from "./utils/moveExtractedFiles";
+import { generateKey } from "./utils/crypto";
 
-let UNIQUE_KEY: string | null = null;
+let PRIVATE_KEY: string | null = null;
 
 async function initializeUniqueKey() {
   try {
     const existingKey = await getKey();
 
     if (existingKey) {
-      UNIQUE_KEY = existingKey;
+      PRIVATE_KEY = existingKey;
       return;
     }
   } catch (error) {
@@ -163,16 +166,15 @@ const isProduction =
 function createWindow() {
   win = new BrowserWindow({
     title: "AroCrypt",
-    width: 520,
-    maxWidth: 520,
-    minWidth: 520,
-    height: 695,
-    minHeight: 695,
-    maxHeight: 695,
+    width: 1100,
+    minWidth: 1100,
+    maxWidth: 1100,
+    height: 670,
+    minHeight: 670,
+    maxHeight: 670,
     frame: false,
     fullscreen: false,
     resizable: false,
-    maximizable: false,
     icon: path.join("./icons/png/64x64.png"),
     webPreferences: {
       preload,
@@ -197,17 +199,18 @@ function createWindow() {
     globalShortcut.register("CommandOrControl+Shift+C", () => {
       return false;
     });
-  }
 
-  globalShortcut.register("Tab", () => {
-    return false;
-  });
+    globalShortcut.register("Tab", () => {
+      return false;
+    });
+  }
 
   function buildContextMenu(event: any, params: any) {
     if (params.isEditable) {
       const menu = Menu.buildFromTemplate([
         { label: "Copy", role: "copy" },
         { label: "Paste", role: "paste" },
+        { label: "Delete", role: "delete" },
       ]);
 
       if (win) {
@@ -258,29 +261,11 @@ app.on("activate", () => {
   }
 });
 
-ipcMain.handle("open-win", (_, arg) => {
-  const childWindow = new BrowserWindow({
-    webPreferences: {
-      preload,
-      nodeIntegration: true,
-      contextIsolation: false,
-    },
-  });
-
-  if (VITE_DEV_SERVER_URL) {
-    childWindow.loadURL(`${VITE_DEV_SERVER_URL}#${arg}`);
-  } else {
-    childWindow.loadFile(indexHtml, { hash: arg });
-  }
-});
-
 /* AroCrypt */
 
-// AroCryption Handlers
-
-ipcMain.handle("decrypt", async (event, { content, iv, method, authTag }) => {
+ipcMain.handle("decrypt", async (event, { packedKeys, method }) => {
   try {
-    const decrypted = decrypt({ content, iv, method, authTag });
+    const decrypted = await decrypt({ packedKeys, method });
     return decrypted;
   } catch (error) {
     safeWriteLog(`Decryption error: ${error}`);
@@ -290,7 +275,7 @@ ipcMain.handle("decrypt", async (event, { content, iv, method, authTag }) => {
 
 ipcMain.handle("encrypt", async (event, { text, method }) => {
   try {
-    const result = encrypt(text, method);
+    const result = await encrypt(text, method);
     return result;
   } catch (error) {
     safeWriteLog(`Encryption error: ${error}`);
@@ -310,7 +295,7 @@ ipcMain.handle(
         throw new Error("Main window not available");
       }
 
-      if (!UNIQUE_KEY) {
+      if (!PRIVATE_KEY) {
         throw new Error("No unique key found for file encryption");
       }
 
@@ -343,6 +328,8 @@ ipcMain.handle(
   "decrypt-file",
   async (event, inputPath: string, method: string) => {
     try {
+      await initializeUniqueKey();
+
       if (!inputPath.endsWith(".arocrypt")) {
         return "invalid_file_type";
       }
@@ -351,13 +338,12 @@ ipcMain.handle(
         throw new Error("Main window not available");
       }
 
-      await initializeUniqueKey();
-      if (!UNIQUE_KEY) {
+      if (!PRIVATE_KEY) {
         throw new Error("No unique key found for file decryption");
       }
 
       try {
-        await validateFileDecryption(inputPath, method, UNIQUE_KEY);
+        await validateFileDecryption(inputPath, method, PRIVATE_KEY);
       } catch (decryptionError) {
         return "key_error";
       }
@@ -376,7 +362,7 @@ ipcMain.handle(
 
       const finalOutputPath = saveDialogResult.filePath;
 
-      const decryptedPath = decryptFile(inputPath, method, UNIQUE_KEY);
+      const decryptedPath = decryptFile(inputPath, method, PRIVATE_KEY);
 
       fs.copyFileSync(await decryptedPath, finalOutputPath);
 
@@ -388,10 +374,92 @@ ipcMain.handle(
         dialog.showErrorBox(
           "Decryption Error",
           (error as any).message ||
-            "An unknown error occurred during decryption"
+          "An unknown error occurred during decryption"
         );
       }
 
+      throw error;
+    }
+  }
+);
+
+ipcMain.handle(
+  "hide-data",
+  async (event, imagePath: string, secretFilesPaths: string[], method: string) => {
+    if (!win) return;
+
+    if (!Array.isArray(secretFilesPaths) || secretFilesPaths.length === 0) {
+      throw new Error("No secret files provided.");
+    }
+    
+    try {
+      await initializeUniqueKey();
+
+      if (!PRIVATE_KEY) {
+        throw new Error("No unique key found for file encryption");
+      }
+
+      const originalFilename = path.basename(imagePath);
+
+      const saveDialogResult = await dialog.showSaveDialog(win, {
+        title: "Save Stego Image",
+        defaultPath: originalFilename,
+        filters: [{ name: "Images", extensions: ["png"] }],
+      });
+
+      if (saveDialogResult.canceled || !saveDialogResult.filePath) {
+        return "hiding_canceled";
+      }
+
+      const finalOutputPath = saveDialogResult.filePath;
+
+      const result = await hideDataInImage(imagePath, secretFilesPaths, method, finalOutputPath);
+
+      return result;
+    } catch (error) {
+      console.error("Data hiding error:", error);
+      throw error;
+    }
+  }
+);
+
+ipcMain.handle(
+  "extract-data",
+  async (event, imagePath: string, method: string) => {
+    if (!win) return;
+    
+    try {
+      await initializeUniqueKey();
+
+      if (!PRIVATE_KEY) {
+        throw new Error("No unique key found for file encryption");
+      }
+
+      // First extract the data to get the file paths
+      const extractionResult = await extractHiddenData(imagePath, method);
+
+      if (extractionResult.response !== "OK") {
+        return "BAD_EXTRACT";
+      }
+
+      // And Then show save dialog
+      const saveDialogResult = await dialog.showOpenDialog(win, {
+        title: "Select Folder to Save Extracted Data",
+        properties: ["openDirectory"],
+      });
+
+      if (saveDialogResult.canceled || !saveDialogResult.filePaths[0]) {
+        return "hiding_canceled";
+      }
+
+      const finalOutputPath = saveDialogResult.filePaths[0];
+
+      // Move the extracted files to the selected location
+      const result = await moveExtractedFiles(extractionResult.files, finalOutputPath);
+
+      return result.join(',');
+    } catch (error) {
+      console.error("Data hiding error:", error);
       throw error;
     }
   }
@@ -416,7 +484,34 @@ ipcMain.handle("open-file-dialog-d", async () => {
   return result.filePaths;
 });
 
-/* ENCRYPT FILE TEST END */
+ipcMain.handle("select-image-datahider", async () => {
+  if (!win) return;
+  const result = await dialog.showOpenDialog(win, {
+    properties: ["openFile"],
+    filters: [{ name: "Image Files", extensions: ["png"] }],
+  });
+
+  return result.filePaths;
+});
+
+ipcMain.handle("select-data-extractor-image", async () => {
+  if (!win) return;
+  const result = await dialog.showOpenDialog(win, {
+    properties: ["openFile"],
+    filters: [{ name: "Image Files", extensions: ["png"] }],
+  });
+
+  return result.filePaths;
+});
+
+ipcMain.handle("select-secret-files", async () => {
+  if (!win) return;
+  const result = await dialog.showOpenDialog(win, {
+    properties: ["openFile", "multiSelections"],
+  });
+
+  return result.filePaths;
+});
 
 // Important Handlers (WINDOW UI)
 
@@ -444,9 +539,48 @@ ipcMain.on("open-external-link", (event, url) => {
 /* Secret Key Functions */
 
 ipcMain.handle("save-unique-key", async (event, key) => {
-  return await saveUniqueKey(key);
+  return await savePrivateKey(key);
 });
 
 ipcMain.handle("get-unique-key", () => {
   return getKey();
+});
+
+ipcMain.handle("open-about-window", () => {
+  if (!win) return;
+  
+  let aboutWin: BrowserWindow | null = null;
+  aboutWin = new BrowserWindow({
+    title: "AroCrypt",
+    width: 624,
+    maxWidth: 624,
+    minWidth: 624,
+    height: 240,
+    minHeight: 240,
+    maxHeight: 240,
+    frame: false,
+    fullscreen: false,
+    resizable: false,
+    maximizable: false,
+    minimizable: false,
+    parent: win,
+    modal: true,
+    icon: path.join("./icons/png/64x64.png"),
+    webPreferences: {
+      preload,
+      contextIsolation: true,
+      nodeIntegration: false,
+      devTools: !isProduction,
+    },
+  });
+
+  if (isProduction) {
+    aboutWin.loadFile(indexHtml, { hash: 'about' });
+  } else {
+    aboutWin.loadURL(`${VITE_DEV_SERVER_URL}#about`);
+  }
+
+  aboutWin.on("closed", () => {
+    aboutWin = null;
+  });
 });

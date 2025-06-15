@@ -1,5 +1,5 @@
 import fs from "fs";
-import { generateKey } from "./crypto";
+import { generateKey, getIVLength } from "./crypto";
 import { safeWriteLog } from "./writeLog";
 import crypto from 'crypto'
 
@@ -10,13 +10,48 @@ export async function validateFileDecryption(inputPath: string, method: string, 
 
     try {
         const fileBuffer = await fs.promises.readFile(inputPath);
+        const fileStats = await fs.promises.stat(inputPath);
+        const hmacStart = fileStats.size - 32; // SHA-256 HMAC is 32 bytes
 
         const fileHandle = await fs.promises.open(inputPath, 'r');
-        const ivBuffer = Buffer.alloc(16);
-        await fileHandle.read(ivBuffer, 0, 16, 0);
+        const ivLength = getIVLength(method);
+        const ivBuffer = Buffer.alloc(ivLength);
+        const saltBuffer = Buffer.alloc(16);
+        const hmacBuffer = Buffer.alloc(32);
+        
+        // Read IV, salt, and HMAC from the file
+        await fileHandle.read(ivBuffer, 0, ivLength, 0);
+        await fileHandle.read(saltBuffer, 0, 16, ivLength);
+        await fileHandle.read(hmacBuffer, 0, 32, hmacStart);
         await fileHandle.close();
 
-        const keyBuffer = generateKey({ originalKey: key, method });
+        safeWriteLog(`[VALIDATE] IV (hex): ${ivBuffer.toString('hex')}`);
+        safeWriteLog(`[VALIDATE] Salt (hex): ${saltBuffer.toString('hex')}`);
+        safeWriteLog(`[VALIDATE] HMAC (hex): ${hmacBuffer.toString('hex')}`);
+
+        const keyBuffer = generateKey({ originalKey: key, method, salt: saltBuffer });
+        safeWriteLog(`[VALIDATE] Generated key length: ${keyBuffer.length} bytes`);
+
+        // Verify HMAC before proceeding with decryption
+        const hmacKey = crypto.createHash('sha256').update(keyBuffer).digest();
+        const hmac = crypto.createHmac('sha256', hmacKey);
+        
+        // Calculate HMAC over IV + salt + encrypted content
+        hmac.update(ivBuffer);
+        hmac.update(saltBuffer);
+        hmac.update(fileBuffer.slice(ivLength + 16, hmacStart));
+        
+        const calculatedHmac = hmac.digest('hex');
+        const storedHmac = hmacBuffer.toString('hex');
+
+        if (calculatedHmac !== storedHmac) {
+            safeWriteLog(`[VALIDATE] HMAC verification failed`);
+            safeWriteLog(`[VALIDATE] Calculated HMAC: ${calculatedHmac}`);
+            safeWriteLog(`[VALIDATE] Stored HMAC: ${storedHmac}`);
+            throw new Error('HMAC verification failed: File may be corrupted or tampered with');
+        }
+
+        safeWriteLog(`[VALIDATE] HMAC verification successful`);
 
         let decipher: crypto.Decipher;
 
@@ -35,22 +70,21 @@ export async function validateFileDecryption(inputPath: string, method: string, 
                     throw new Error('Unsupported decryption method');
             }
 
-            const encryptedContent = fileBuffer.slice(16); // Skip IV
+            const encryptedContent = fileBuffer.slice(ivLength + 16, hmacStart);
             const decryptedBuffer = decipher.update(encryptedContent);
             const finalBuffer = decipher.final();
 
+            safeWriteLog(`[VALIDATE] Decryption validation successful`);
+            return 'Valid key';
         } catch (decipherError: any) {
-
             if (decipherError.message && decipherError.message.includes('BAD_DECRYPT')) {
+                safeWriteLog(`[VALIDATE] BAD_DECRYPT error: ${decipherError.message}`);
                 throw new Error('Invalid key: Decryption failed');
             }
-
             throw decipherError;
         }
-
-        return 'Valid key';
     } catch (error) {
-        await safeWriteLog(`Decryption validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        await safeWriteLog(`[VALIDATE] Decryption validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         throw new Error('Invalid key or decryption method');
     }
 }

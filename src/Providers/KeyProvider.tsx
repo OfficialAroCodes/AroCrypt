@@ -1,20 +1,29 @@
-import ModalAlertBox from '@/Components/ModalAlertBox';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import getCurrentKey from '@/Utils/getCurrentKey';
 import CopyText from '@/Utils/copyText';
 import { generateCryptographicKey } from '@/Utils/keyUtils';
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+import ModalAlertBox from '@/Components/ModalAlertBox';
 
-const KeyProvider: React.FC = () => {
+interface ChangeKeyModalProps {
+    show?: boolean;
+    onClose?: () => void;
+}
+
+const KeyProvider: React.FC<ChangeKeyModalProps> = ({ show, onClose }) => {
     const { t } = useTranslation();
+
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [uniqueKey, setUniqueKey] = useState('');
     const [isSaveDisabled, setIsSaveDisabled] = useState(true);
+    const [noKey, setNoKey] = useState(false);
 
     const uniqueKeyInputRef = useRef<HTMLInputElement>(null);
 
     const checkUniqueKey = useCallback(async () => {
         try {
             const noKey = await window.electronAPI.noUniqueKey();
+            setNoKey(noKey)
             setIsModalVisible(noKey);
         } catch (error) {
             console.error('Error checking unique key:', error);
@@ -24,6 +33,31 @@ const KeyProvider: React.FC = () => {
     useEffect(() => {
         checkUniqueKey();
     }, [checkUniqueKey]);
+
+    useEffect(() => {
+        const fetchCurrentKey = async () => {
+            const currentKey = await getCurrentKey();
+            setUniqueKey(currentKey || '');
+        };
+
+        if (show) {
+            setIsModalVisible(show);
+        }
+
+        if (show) {
+            fetchCurrentKey();
+            setIsSaveDisabled(true);
+
+            setTimeout(() => {
+                uniqueKeyInputRef.current?.focus();
+            }, 100);
+        }
+    }, [show]);
+
+    const handleClose = () => {
+        setIsModalVisible(false);
+        onClose && onClose();
+    };
 
     const handleKeyInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const key = e.target.value;
@@ -36,7 +70,7 @@ const KeyProvider: React.FC = () => {
     };
 
     const handleGenerateRandomKey = () => {
-        const randomKey = generateCryptographicKey(64);
+        const randomKey = generateCryptographicKey(32);
         setUniqueKey(randomKey);
         setIsSaveDisabled(false);
 
@@ -49,7 +83,7 @@ const KeyProvider: React.FC = () => {
         try {
             const result = await window.electronAPI.saveUniqueKey(uniqueKey);
             if (result) {
-                setIsModalVisible(false);
+                handleClose();
             }
         } catch (error) {
             console.error('Error saving unique key:', error);
@@ -69,59 +103,84 @@ const KeyProvider: React.FC = () => {
         }
     }
 
+    useEffect(() => {
+        if (noKey) {
+            handleGenerateRandomKey();
+        }
+    }, [noKey])
+
+
     return (
         <div className={`modal_box ${isModalVisible ? 'Show' : ''}`} id="settingKeyBox">
             <div className="modal_content">
                 <p className="modal_header">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 2a5 5 0 0 1 5 5v3a3 3 0 0 1 3 3v6a3 3 0 0 1 -3 3h-10a3 3 0 0 1 -3 -3v-6a3 3 0 0 1 3 -3v-3a5 5 0 0 1 5 -5m0 12a2 2 0 0 0 -1.995 1.85l-.005 .15a2 2 0 1 0 2 -2m0 -10a3 3 0 0 0 -3 3v3h6v-3a3 3 0 0 0 -3 -3" /></svg>
-                    <span id="SecretKeyModalHeader">{t('setup_secret_key')}</span>
+                    {
+                        noKey ? t("set_private_key") : t('change_private_key')
+                    }
                 </p>
                 <div className='modal_box_alerts'>
-                    <ModalAlertBox header={t('what_is_this_key')} text_info={t('unique_secret_key_info')} type={0} />
+                    <ModalAlertBox
+                        header={t('what_is_this_key')}
+                        text_info={t('what_is_this_key_info')}
+                        type={0}
+                        changable={true}
+                    />
+                    <ModalAlertBox
+                        header={t('critical_security')}
+                        text_info={t('critical_security_info')}
+                        type={1}
+                        changable={false}
+                    />
                 </div>
                 <div className="InputContainer">
+                    <button className="refresh_key_btn re" onClick={handleGenerateRandomKey}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256"><path d="M216,128a88,88,0,1,1-88-88A88,88,0,0,1,216,128Z" opacity="0.2"></path><path d="M224,48V96a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h28.69L182.06,73.37a79.56,79.56,0,0,0-56.13-23.43h-.45A79.52,79.52,0,0,0,69.59,72.71,8,8,0,0,1,58.41,61.27a96,96,0,0,1,135,.79L208,76.69V48a8,8,0,0,1,16,0ZM186.41,183.29a80,80,0,0,1-112.47-.66L59.31,168H88a8,8,0,0,0,0-16H40a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V179.31l14.63,14.63A95.43,95.43,0,0,0,130,222.06h.53a95.36,95.36,0,0,0,67.07-27.33,8,8,0,0,0-11.18-11.44Z"></path></svg>
+                    </button>
                     <input
                         ref={uniqueKeyInputRef}
                         spellCheck="false"
                         type="text"
-                        className={`Input padding ${IsCopied ? 'Success' : ''}`}
+                        className={`Input padding-2 ${IsCopied ? 'Success' : ''}`}
                         id="uniqueKey"
-                        placeholder={t('key_recommendation')}
-                        maxLength={333}
+                        maxLength={64}
                         value={uniqueKey}
                         onChange={handleKeyInput}
                     />
                     <button className="InputCopyBTN re" onClick={handleCopyKey}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24">
-                            <g id="copy_line" fill="none">
-                                <path d="M24 0v24H0V0zM12.593 23.258l-.011.002-.071.035-.02.004-.014-.004-.071-.035c-.01-.004-.019-.001-.024.005l-.004.01-.017.428.005.02.01.013.104.074.015.004.012-.004.104-.074.012-.016.004-.017-.017-.427c-.002-.01-.009-.017-.017-.018m.265-.113-.013.002-.185.093-.01.01-.003.011.018.43.005.012.008.007.201.093c.012.004.023 0 .029-.008l.004-.014-.034-.614c-.003-.012-.01-.02-.02-.022m-.715.002a.023.023 0 0 0-.027.006l-.006.014-.034.614c0 .012.007.02.017.024l.015-.002.201-.093.01-.008.004-.011.017-.43-.003-.012-.01-.01z" />
-                                <path fill="currentColor" d="M19 2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2V4a2 2 0 0 1 2-2zm-4 6H5v12h10zm-5 7a1 1 0 1 1 0 2H8a1 1 0 1 1 0-2zm9-11H9v2h6a2 2 0 0 1 2 2v8h2zm-7 7a1 1 0 0 1 .117 1.993L12 13H8a1 1 0 0 1-.117-1.993L8 11z" />
-                            </g>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="22"
+                            height="22"
+                            fill="currentColor"
+                            viewBox="0 0 256 256"
+                        >
+                            <path d="M216,40V168H168V88H88V40Z" opacity="0.2"></path>
+                            <path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"></path>
                         </svg>
                     </button>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'end' }}>
-                        <p
-                            id="generateRandomKey"
-                            onClick={handleGenerateRandomKey}
-                            style={{ cursor: 'pointer' }}
-                        >
-                            {t('generate_random_key')}
-                        </p>
-                    </div>
                 </div>
                 <div className="modal_btns">
+                    {
+                        !noKey && (
+                            <button
+                                className="secondary_button re"
+                                onClick={handleClose}
+                            >
+                                {t('cancel')}
+                            </button>
+                        )
+                    }
                     <button
                         className="main_button re"
-                        id="uniqueBTN"
                         disabled={isSaveDisabled}
                         onClick={handleSaveKey}
                     >
-                        {t('save_secret_key')}
+                        {t('apply')}
                     </button>
                 </div>
             </div>
         </div>
-    );
-};
+    )
+}
 
-export default KeyProvider;
+export default KeyProvider

@@ -6,16 +6,16 @@ import { safeWriteLog } from './writeLog';
 import { sanitizeFilePath } from './sanitizeFilePath';
 import getKey from './KeyService';
 
-let UNIQUE_KEY: string | null = null;
+let PRIVATE_KEY: string | null = null;
 
 async function initializeUniqueKey() {
-    UNIQUE_KEY = await getKey();
+    PRIVATE_KEY = await getKey();
 }
 
 export async function decryptFile(
     inputPath: string,
     method: string,
-    key: string | null = UNIQUE_KEY,
+    key: string | null = PRIVATE_KEY,
     outputPath?: string
 ): Promise<string> {
     try {
@@ -24,19 +24,62 @@ export async function decryptFile(
             throw new Error('No decryption key found');
         }
 
+        safeWriteLog(`[DECRYPT] Starting decryption of file: ${inputPath}`);
+        safeWriteLog(`[DECRYPT] Using method: ${method}`);
+
         const fullInputPath = sanitizeFilePath(inputPath, false);
 
         if (!fs.existsSync(fullInputPath) || !fullInputPath.endsWith('.arocrypt')) {
             throw new Error(`Invalid encrypted file: ${fullInputPath}`);
         }
 
-        const keyBuffer = generateKey({ originalKey: key, method });
-
         const ivLength = getIVLength(method);
         const fileHandle = await fs.promises.open(fullInputPath, 'r');
+        
+        // Read IV, salt, and HMAC from the file
         const ivBuffer = Buffer.alloc(ivLength);
+        const saltBuffer = Buffer.alloc(16);
+        const hmacBuffer = Buffer.alloc(32); // SHA-256 HMAC is 32 bytes
+        
         await fileHandle.read(ivBuffer, 0, ivLength, 0);
+        await fileHandle.read(saltBuffer, 0, 16, ivLength);
         await fileHandle.close();
+
+        // Get file size and read HMAC from the end
+        const fileStats = await fs.promises.stat(fullInputPath);
+        const hmacStart = fileStats.size - 32;
+        const hmacReadHandle = await fs.promises.open(fullInputPath, 'r');
+        await hmacReadHandle.read(hmacBuffer, 0, 32, hmacStart);
+        await hmacReadHandle.close();
+
+        safeWriteLog(`[DECRYPT] IV (hex): ${ivBuffer.toString('hex')}`);
+        safeWriteLog(`[DECRYPT] Salt (hex): ${saltBuffer.toString('hex')}`);
+        safeWriteLog(`[DECRYPT] HMAC (hex): ${hmacBuffer.toString('hex')}`);
+
+        const keyBuffer = generateKey({ originalKey: key, method, salt: saltBuffer });
+        safeWriteLog(`[DECRYPT] Generated key length: ${keyBuffer.length} bytes`);
+
+        // Verify HMAC before proceeding with decryption
+        const hmacKey = crypto.createHash('sha256').update(keyBuffer).digest();
+        const hmac = crypto.createHmac('sha256', hmacKey);
+        
+        // Read the file content up to the HMAC
+        const fileContent = await fs.promises.readFile(fullInputPath);
+        hmac.update(ivBuffer);
+        hmac.update(saltBuffer);
+        hmac.update(fileContent.slice(ivLength + 16, hmacStart));
+        
+        const calculatedHmac = hmac.digest('hex');
+        const storedHmac = hmacBuffer.toString('hex');
+
+        if (calculatedHmac !== storedHmac) {
+            safeWriteLog(`[DECRYPT] HMAC verification failed`);
+            safeWriteLog(`[DECRYPT] Calculated HMAC: ${calculatedHmac}`);
+            safeWriteLog(`[DECRYPT] Stored HMAC: ${storedHmac}`);
+            throw new Error('HMAC verification failed: File may be corrupted or tampered with');
+        }
+
+        safeWriteLog(`[DECRYPT] HMAC verification successful`);
 
         // Determine output path
         const originalFilename = path.basename(fullInputPath, '.arocrypt');
@@ -45,8 +88,11 @@ export async function decryptFile(
             ? sanitizeFilePath(outputPath, true)
             : defaultOutputPath;
 
+        safeWriteLog(`[DECRYPT] Output path: ${fullOutputPath}`);
+
         const inputStream = fs.createReadStream(fullInputPath, {
-            start: ivLength,
+            start: ivLength + 16, // Skip IV and salt
+            end: hmacStart - 1, // Stop before HMAC
             encoding: undefined 
         });
         const outputStream = fs.createWriteStream(fullOutputPath, {
@@ -69,10 +115,10 @@ export async function decryptFile(
                     throw new Error('Unsupported decryption method');
             }
 
-            // Ensure proper padding
             decipher.setAutoPadding(true);
+            safeWriteLog(`[DECRYPT] Decipher created successfully`);
         } catch (cipherError) {
-            safeWriteLog(`Decipher creation error: ${cipherError}`);
+            safeWriteLog(`[DECRYPT] Decipher creation error: ${cipherError}`);
             throw cipherError;
         }
 
@@ -80,34 +126,36 @@ export async function decryptFile(
 
         return new Promise((resolve, reject) => {
             decryptionStream.on('finish', () => {
-                safeWriteLog(`Decryption successful. Output file: ${fullOutputPath}`);
+                safeWriteLog(`[DECRYPT] Decryption successful. Output file: ${fullOutputPath}`);
                 resolve(fullOutputPath);
             });
 
             decryptionStream.on('error', (error: any) => {
                 if (error.message && error.message.includes('BAD_DECRYPT')) {
                     const specificError = new Error('Decryption failed: Incorrect key or corrupted file');
+                    safeWriteLog(`[DECRYPT] BAD_DECRYPT error: ${error.message}`);
+                    safeWriteLog(`[DECRYPT] Error details: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
                     
                     try {
                         if (fs.existsSync(fullOutputPath)) {
                             fs.unlinkSync(fullOutputPath);
                         }
                     } catch (cleanupError) {
-                        safeWriteLog(`Error during cleanup: ${cleanupError}`);
+                        safeWriteLog(`[DECRYPT] Error during cleanup: ${cleanupError}`);
                     }
                     
                     reject(specificError);
                 } else {
-                    safeWriteLog(`File decryption stream error: ${error}`);
-                    safeWriteLog(`Detailed error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
+                    safeWriteLog(`[DECRYPT] File decryption stream error: ${error}`);
+                    safeWriteLog(`[DECRYPT] Detailed error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
                     
                     reject(error);
                 }
             });
         });
     } catch (error) {
-        await safeWriteLog(`File decryption error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        await safeWriteLog(`Detailed error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
+        await safeWriteLog(`[DECRYPT] File decryption error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        await safeWriteLog(`[DECRYPT] Detailed error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
         throw error;
     }
 }

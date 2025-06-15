@@ -6,7 +6,7 @@ import React, {
     ReactNode
 } from 'react';
 
-export const themes = ['dark_purple', 'dark_green', 'dark_cyan', 'dark_orange', 'dark_pink', 'dark_red'] as const;
+export const themes = ['dark_orange', 'dark_red', 'dark_green', 'dark_blue', 'dark_purple'] as const;
 export type Theme = typeof themes[number];
 
 interface ThemeContextType {
@@ -15,7 +15,7 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-    currentTheme: 'dark_purple',
+    currentTheme: 'dark_orange',
     setCurrentTheme: () => { }
 });
 
@@ -23,7 +23,7 @@ export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [currentTheme, setCurrentTheme] = useState<Theme>(() => {
-        return (localStorage.getItem('theme') as Theme) || 'dark_purple';
+        return (localStorage.getItem('theme') as Theme) || 'dark_orange';
     });
 
     useEffect(() => {
@@ -51,8 +51,8 @@ export const initializeTheme = () => {
     if (savedTheme && themes.includes(savedTheme)) {
         document.documentElement.setAttribute('data-theme', savedTheme);
     } else {
-        document.documentElement.setAttribute('data-theme', 'dark_purple');
-        localStorage.setItem('theme', 'dark_purple');
+        document.documentElement.setAttribute('data-theme', 'dark_orange');
+        localStorage.setItem('theme', 'dark_orange');
     }
 };
 

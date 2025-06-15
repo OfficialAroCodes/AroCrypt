@@ -1,28 +1,33 @@
 import { ipcRenderer, contextBridge } from 'electron'
 
 interface ElectronAPI {
-  // Encryption/Decryption Events
-  onEncrypted: (callback: (event: any) => void) => void;
-  onDecrypted: (callback: (event: any) => void) => void;
-
   encryptFile: (inputPath: string, method: string, outputPath?: string) => Promise<string>;
   decryptFile: (filePath: string, method: string) => Promise<string>;
+  hideData: (imagePath: string, secretFilesPath: string[], method: string, outputPath?: string) => Promise<string>;
+  extractHiddenData: (imagePath: string, method: string, outputPath?: string) => Promise<string>;
   showSaveDialog: (options: { title?: string; defaultPath?: string }) => Promise<string>;
-  onEncryptionProgress: (callback: (progress: number) => void) => void;
   openFileDialog: () => Promise<string[]>;
   openFileDialogD: () => Promise<string[]>;
+
+  selectDataHiderImage: () => Promise<string[]>;
+  selectDataHiderSecretFiles: () => Promise<string[]>;
+  selectDataExtractorImage: () => Promise<string[]>;
 
   // Secret Key Methods
   saveUniqueKey: (key: string) => Promise<boolean>;
   getUniqueKey: () => Promise<string | null>;
   noUniqueKey: () => Promise<boolean>;
-  encrypt: (params: { text: string; method: string }) => Promise<any>;
-  decrypt: (params: {
+  encrypt: (params: { text: string; method: string }) => Promise<{
     content: string;
     iv: string;
+    salt: string;
+    hmac: string;
     method: string;
-    authTag: string
-  }) => Promise<any>;
+  }>;
+  decrypt: (params: {
+    packedKeys: string;
+    method: string;
+  }) => Promise<string>;
 
   // Utility Methods
   copyToClipboard: (text: string) => Promise<void>;
@@ -33,6 +38,7 @@ interface ElectronAPI {
   minimizeWindow: () => Promise<void>;
   closeWindow: () => Promise<void>;
   downloadUpdate?: () => Promise<void>;
+  openAboutWindow?: () => Promise<void>;
 
   // Update Checking
   checkForUpdates: () => Promise<UpdateInfo | null>;
@@ -52,15 +58,15 @@ interface UpdateInfo {
 
 // --------- Expose some API to the Renderer process ---------
 const electronAPI: ElectronAPI = {
-  onEncrypted: (callback) => ipcRenderer.on('encrypted', callback),
-  onDecrypted: (callback) => ipcRenderer.on('decrypted', callback),
-
-  onEncryptionProgress: (callback: (progress: number) => void) =>
-    ipcRenderer.on('encryption-progress', (_event, progressData: { progress: number }) => {
-      callback(progressData.progress);
-    }),
   encryptFile: (inputPath, method, outputPath) =>
     ipcRenderer.invoke('encrypt-file', inputPath, method, outputPath),
+
+  hideData: (imagePath, secretFilesPath, method, outputPath) =>
+    ipcRenderer.invoke('hide-data', imagePath, secretFilesPath, method, outputPath),
+
+  extractHiddenData: (imagePath, method, outputPath) =>
+    ipcRenderer.invoke('extract-data', imagePath, method, outputPath),
+
   decryptFile: (filePath: string, method: string) =>
     ipcRenderer.invoke('decrypt-file', filePath, method),
   showSaveDialog: (options) =>
@@ -73,6 +79,11 @@ const electronAPI: ElectronAPI = {
   openFileDialog: () => ipcRenderer.invoke('open-file-dialog'),
   openFileDialogD: () => ipcRenderer.invoke('open-file-dialog-d'),
 
+  selectDataHiderImage: () => ipcRenderer.invoke('select-image-datahider'),
+  selectDataHiderSecretFiles: () => ipcRenderer.invoke('select-secret-files'),
+
+  selectDataExtractorImage: () => ipcRenderer.invoke('select-data-extractor-image'),
+  
   // Secret Key Methods
   saveUniqueKey: (key) => {
     if (!key || key.length < 4) {
@@ -86,10 +97,10 @@ const electronAPI: ElectronAPI = {
     return !key;
   },
   encrypt: ({ text, method }) => {
-    return ipcRenderer.invoke('encrypt', { text, method });
+    return ipcRenderer.invoke("encrypt", { text, method });
   },
-  decrypt: ({ content, iv, method, authTag }) => {
-    return ipcRenderer.invoke('decrypt', { content, iv, method, authTag });
+  decrypt: ({ packedKeys, method }) => {
+    return ipcRenderer.invoke("decrypt", { packedKeys, method });
   },
 
   // Utility Methods
@@ -107,6 +118,8 @@ const electronAPI: ElectronAPI = {
 
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   downloadUpdate: () => ipcRenderer.invoke('download-update'),
+  openAboutWindow: () => ipcRenderer.invoke('open-about-window'),
+  
   onUpdateNotAvailable: (callback) => ipcRenderer.on('update-not-available', (_event, updateInfo) => {
     callback({ ...updateInfo, isUpdateAvailable: false });
   }),

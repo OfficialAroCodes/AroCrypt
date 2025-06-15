@@ -1,18 +1,15 @@
 interface ElectronAPI {
-    // Encryption/Decryption Events
-    onEncrypted: (callback: (event: any) => void) => void;
-    onDecrypted: (callback: (event: any) => void) => void;
 
-    // Secret Key Methods
+    // Private Key
     saveUniqueKey: (key: string) => Promise<boolean>;
     getUniqueKey: () => Promise<string | null>;
     noUniqueKey: () => Promise<boolean>;
+
+    // Text
     encrypt: (params: { text: string; method: string }) => Promise<any>;
     decrypt: (params: {
-        content: string;
-        iv: string;
+        packedKeys: string;
         method: string;
-        authTag: string
     }) => Promise<any>;
 
     showSaveDialog: (options: {
@@ -27,12 +24,30 @@ interface ElectronAPI {
         method: string,
         outputPath?: string
     ) => Promise<string>;
-    onEncryptionProgress: (callback: (event: { progress: number }) => void) => void;
+
     decryptFile: (filePath: string, method: string) => Promise<string>;
     openFileDialog: () => Promise<string[]>;
     openFileDialogD: () => Promise<string[]>;
 
-    // Utility Methods
+    // Embed Data
+    hideData: (
+        imagePath: string,
+        secretFilesPath: string[],
+        method: string,
+        outputPath?: string
+    ) => Promise<string>;
+    selectDataHiderImage: () => Promise<string[]>;
+    selectDataHiderSecretFiles: () => Promise<string[]>;
+
+    // Hidden Data Extraction
+    extractHiddenData: (
+        imagePath: string,
+        method: string,
+        outputPath?: string
+    ) => Promise<string>;
+    selectDataExtractorImage: () => Promise<string[]>;
+    
+    // Utility
     copyToClipboard: (text: string) => Promise<void>;
     openExternalLink: (url: string) => void;
     getAppVersion: () => Promise<string>;
@@ -41,11 +56,12 @@ interface ElectronAPI {
     minimizeWindow: () => Promise<void>;
     closeWindow: () => Promise<void>;
 
-    // Update Checking
+    // Update
     onUpdateAvailable: (callback: (updateInfo: UpdateInfo & { isUpdateAvailable: boolean }) => void) => void;
     onUpdateNotAvailable: (callback: (updateInfo: UpdateInfo & { isUpdateAvailable: boolean }) => void) => void;
     checkForUpdates: () => Promise<UpdateInfo>;
     downloadUpdate?: () => Promise<void>;
+    openAboutWindow: () => Promise<void>;
 }
 
 interface UpdateInfo {

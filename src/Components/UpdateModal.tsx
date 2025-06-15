@@ -28,8 +28,8 @@ const UpdateModal = () => {
         window.electronAPI.onUpdateAvailable(handleUpdateAvailable);
         window.electronAPI.onUpdateNotAvailable(handleUpdateNotAvailable);
 
-        return () => {
-        };
+        return () => { };
+
     }, []);
 
     const [isLoading, setIsLoading] = useState(false);
@@ -39,28 +39,62 @@ const UpdateModal = () => {
         window.electronAPI.downloadUpdate?.();
     };
 
+    useEffect(() => (
+        setUpdateVersion("0.6.1")
+    ), [])
+
     return (
-        <div className={`modal_box ${isUpdateAvailable && 'Show'}`}>
-            <div className="modal_content">
-                <p className='modal_header'>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 4h-6a3 3 0 0 0 -3 3v10a3 3 0 0 0 3 3h6a3 3 0 0 0 3 -3v-10a3 3 0 0 0 -3 -3z" /><path d="M7 6a1 1 0 0 1 .993 .883l.007 .117v10a1 1 0 0 1 -1.993 .117l-.007 -.117v-10a1 1 0 0 1 1 -1z" /><path d="M4 7a1 1 0 0 1 .993 .883l.007 .117v8a1 1 0 0 1 -1.993 .117l-.007 -.117v-8a1 1 0 0 1 1 -1z" /></svg>
-                    {t("update_available")}
-                </p>
-                <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className='update_ill'> <g clipPath="url(#clip0_221_10)"> <path d="M0 0H100C155.228 0 200 44.7715 200 100V200H100C44.7715 200 0 155.228 0 100V0Z" fill="url(#paint0_linear_221_10)" /> </g> <defs> <linearGradient id="paint0_linear_221_10" x1="100" y1="0" x2="100" y2="200" gradientUnits="userSpaceOnUse"> <stop stopColor="#A7B5FF" /> <stop offset="1" stopColor="#F3ACFF" /> </linearGradient> <clipPath id="clip0_221_10"> <rect width="200" height="200" fill="white" /> </clipPath> </defs> </svg>
-                <p className="update_info">{t("update_available_info")} v{updateVersion}</p>
-                <button className='main_button re' disabled={isLoading} onClick={handleDownloadUpdate}>
-                    {isLoading ? (
-                        <>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" /><path d="M9 14v.01" /><path d="M12 14v.01" /><path d="M15 14v.01" /></svg>
-                            {t("please_wait_for_btn")}
-                        </>
-                    ) : (
-                        <>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 11l5 5l5 -5" /><path d="M12 4l0 12" /></svg>
-                            {t("download_install_btn")}
-                        </>
-                    )}
-                </button>
+        <div className={`modal_box  ${isUpdateAvailable && 'Show'}`}>
+            <div className="modal_content update_modal">
+                <div className='update_box'>
+                    <div className='icon'>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="currentColor" viewBox="0 0 256 256"><path d="M216,128a88,88,0,1,1-88-88A88,88,0,0,1,216,128Z" opacity="0.2"></path><path d="M88,104H40a8,8,0,0,1-8-8V48a8,8,0,0,1,16,0V76.69L62.63,62.06A95.43,95.43,0,0,1,130,33.94h.53a95.36,95.36,0,0,1,67.07,27.33,8,8,0,0,1-11.18,11.44,79.52,79.52,0,0,0-55.89-22.77h-.45A79.56,79.56,0,0,0,73.94,73.37L59.31,88H88a8,8,0,0,1,0,16Zm128,48H168a8,8,0,0,0,0,16h28.69l-14.63,14.63a79.56,79.56,0,0,1-56.13,23.43h-.45a79.52,79.52,0,0,1-55.89-22.77,8,8,0,1,0-11.18,11.44,95.36,95.36,0,0,0,67.07,27.33H126a95.43,95.43,0,0,0,67.36-28.12L208,179.31V208a8,8,0,0,0,16,0V160A8,8,0,0,0,216,152Z"></path></svg>
+                    </div>
+                    <div className='details'>
+                        <p className='modal_header uh'>{t('update_required')}</p>
+                        <p className="update_info">{t('update_info')}</p>
+                    </div>
+                    <button
+                        className='main_button re'
+                        disabled={isLoading}
+                        onClick={handleDownloadUpdate}
+                    >
+                        {isLoading ? (
+                            <>
+                                <svg
+                                    className="btn_container"
+                                    viewBox="0 0 40 40"
+                                    height="40"
+                                    width="40"
+                                >
+                                    <circle
+                                        className="track"
+                                        cx="20"
+                                        cy="20"
+                                        r="17.5"
+                                        pathLength="100"
+                                        stroke-width="5px"
+                                        fill="none"
+                                    />
+                                    <circle
+                                        className="car"
+                                        cx="20"
+                                        cy="20"
+                                        r="17.5"
+                                        pathLength="100"
+                                        stroke-width="5px"
+                                        fill="none"
+                                    />
+                                </svg>
+                            </>
+                        ) : (
+                            <>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M232,136v64a8,8,0,0,1-8,8H32a8,8,0,0,1-8-8V136a8,8,0,0,1,8-8H224A8,8,0,0,1,232,136Z" opacity="0.2"></path><path d="M240,136v64a16,16,0,0,1-16,16H32a16,16,0,0,1-16-16V136a16,16,0,0,1,16-16H72a8,8,0,0,1,0,16H32v64H224V136H184a8,8,0,0,1,0-16h40A16,16,0,0,1,240,136Zm-117.66-2.34a8,8,0,0,0,11.32,0l48-48a8,8,0,0,0-11.32-11.32L136,108.69V24a8,8,0,0,0-16,0v84.69L85.66,74.34A8,8,0,0,0,74.34,85.66ZM200,168a12,12,0,1,0-12,12A12,12,0,0,0,200,168Z"></path></svg>
+                                {t('update_to')} v{updateVersion}
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
         </div>
     )

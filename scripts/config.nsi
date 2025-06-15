@@ -73,12 +73,12 @@ Function un.DeleteStoredCredential
     ${If} ${Errors}
         DetailPrint "Could not detect OS. Skipping credential deletion."
     ${ElseIf} $0 == "Windows_NT"
-        DetailPrint "Detected Windows. Deleting credential 'AroCrypt/unique_key'..."
-        ExecWait 'cmd.exe /C "cmdkey /delete:AroCrypt/unique_key"' $1
+        DetailPrint "Detected Windows. Deleting credential 'AroCrypt/private_key'..."
+        ExecWait 'cmd.exe /C "cmdkey /delete:AroCrypt/private_key"' $1
         DetailPrint "cmdkey exited with code $1"
     ${Else}
-        DetailPrint "Detected Linux. Attempting to delete secret 'AroCrypt/unique_key'..."
-        ExecWait 'secret-tool clear service AroCrypt account unique_key' $1
+        DetailPrint "Detected Linux. Attempting to delete secret 'AroCrypt/private_key'..."
+        ExecWait 'secret-tool clear service AroCrypt account private_key' $1
         DetailPrint "secret-tool exited with code $1"
     ${EndIf}
 Return
