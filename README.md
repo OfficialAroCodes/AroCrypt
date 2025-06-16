@@ -3,6 +3,8 @@
 
 **AroCrypt** is a modern, cross-platform encryption tool designed to protect your sensitive data—whether it's text, files, or even embedded within images. With a clean interface and military-grade encryption, AroCrypt makes powerful data protection easy for everyone.
 
+![en_img](https://github.com/user-attachments/assets/4df4dd31-ce1a-4091-b83c-3988eef6812d)
+
 ---
 
 ## 🖥️ OS Compatibility
