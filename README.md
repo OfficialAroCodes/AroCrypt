@@ -12,11 +12,12 @@
 | Operating System | 32-Bit | 64-Bit |
 |------------------|--------|--------|
 | Windows 7        | ❌     | ❌     |
-| Windows 8        | ❌     | ✅     |
-| Windows 8.1      | ❌     | ✅     |
-| Windows 10       | ❌     | ✅     |
-| Windows 11       | ❌     | ✅     |
-| Linux (Debian-based) | ❌ | ✅  |
+| Windows 8        | ✅     | ✅     |
+| Windows 8.1      | ✅     | ✅     |
+| Windows 10       | ✅     | ✅     |
+| Windows 11       | ✅     | ✅     |
+| Linux (Debian-based) | ✅ | ✅  |
+| MacOS 11+ | ❌ | ✅ & `(arm64)`  |
 
 ---
 
@@ -96,7 +97,7 @@ With key/IV randomization and optional HMAC protection for integrity. We’re co
 - Built with **Electron.js**, powered by **Node.js** and **React.js**.
 - Entirely written in **TypeScript** for type safety and maintainability.
 - Encryption logic is fully custom, using Node.js crypto APIs — no third-party libraries for core encryption.
-- Portable architecture: runs on Windows & Linux with `.deb` and `.AppImage` builds.
+- Portable architecture: runs on Windows, Linux and MacOS.
 
 ---
 
