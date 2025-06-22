@@ -50,7 +50,7 @@
       "msi",
       "portable"
     ],
-    "icon": "icons/icon.ico",
+    "icon": "icons/win/icon.ico",
     "requestedExecutionLevel": "requireAdministrator",
     "cscLink": "./certs/arocrypt.pfx",
     "cscKeyPassword": "${CERT_PASSWORD}",

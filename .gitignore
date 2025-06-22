@@ -34,4 +34,6 @@ yarn.lock
 /playwright-report/
 /playwright/.cache/
 
+#other
 .env
+.npmrc
