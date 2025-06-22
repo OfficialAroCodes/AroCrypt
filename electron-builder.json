@@ -7,10 +7,9 @@
     "smartUnpack": true
   },
   "asarUnpack": [
-    "!**/certs/arocrypt.pfx",
-    "!certs/arocrypt.pfx",
-    "!temp-electron-builder.json",
-    "!.env"
+    "certs/arocrypt.pfx",
+    "temp-electron-builder.json",
+    ".env"
   ],
   "directories": {
     "output": "release/${version}"
@@ -19,42 +18,42 @@
     {
       "provider": "github",
       "owner": "OfficialAroCodes",
-      "repo": "arocrypt"
+      "repo": "AroCrypt",
+      "private": false
     }
   ],
   "files": [
+    "!src/**",
+    "!release/**",
+    "!logs/**",
+    "!**/*.map",
+    "!**/*.ts",
+    "!**/*.tsx",
+    "!**/*.md",
+    "!**/__tests__/**",
+    "!**/*.test.*",
+    "!**/*.spec.*",
+    "!**/test/**",
+    "!**/example/**",
+    "!**/docs/**",
+    "!**/node_modules/**/*.md",
+    "!**/node_modules/**/*.ts",
+    "!**/node_modules/**/test/**",
     "dist-electron/**/*",
     "dist/**/*",
     "icons/**/*",
-    "public/**/*",
-    "**/*",
-    "!**/*.ts",
-    "!*.code-workspace",
-    "!**/certs/arocrypt.pfx",
-    "!certs/arocrypt.pfx",
-    "!./certs/arocrypt.pfx",
-    "!**/temp-electron-builder.json",
-    "!temp-electron-builder.json",
-    "!./temp-electron-builder.json",
-    "!**/.env",
-    "!.env",
-    "!./.env",
-    "./scripts/installer.manifest"
+    "public/**/*"
   ],
   "win": {
     "target": [
-      {
-        "target": "nsis",
-        "arch": [
-          "x64"
-        ]
-      }
+      "nsis",
+      "msi",
+      "portable"
     ],
-    "artifactName": "${productName}-Setup-${version}.${ext}",
     "icon": "icons/icon.ico",
     "requestedExecutionLevel": "requireAdministrator",
-    "certificateFile": "./certs/arocrypt.pfx",
-    "certificatePassword": "${CERT_PASSWORD}",
+    "cscLink": "./certs/arocrypt.pfx",
+    "cscKeyPassword": "${CERT_PASSWORD}",
     "forceCodeSigning": true
   },
   "linux": {
@@ -65,17 +64,31 @@
       "AppImage"
     ]
   },
+  "mac": {
+    "target": [
+      "dmg",
+      "app"
+    ]
+  },
   "nsis": {
     "oneClick": false,
     "perMachine": true,
     "allowToChangeInstallationDirectory": true,
-    "deleteAppDataOnUninstall": false,
+    "deleteAppDataOnUninstall": true,
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
     "installerIcon": "icons/win/icon.ico",
     "installerHeaderIcon": "icons/win/icon.ico",
     "uninstallDisplayName": "AroCrypt",
-    "include": "scripts/config.nsi"
+    "include": "scripts/config.nsi",
+    "artifactName": "${productName}-Setup-${version}.${ext}"
+  },
+  "msi": {
+    "artifactName": "${productName}-Setup-${version}.${ext}"
+  },
+  "portable": {
+    "requestExecutionLevel": "admin",
+    "artifactName": "${productName}-Portable-${version}.${ext}"
   },
   "extraResources": [
     {

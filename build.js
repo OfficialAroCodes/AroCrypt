@@ -31,7 +31,7 @@ async function main() {
   const config = JSON.parse(rawConfig);
 
   if (config.win && certPassword) {
-    config.win.certificatePassword = certPassword;
+    config.win.cscKeyPassword = certPassword;
   }
 
   const tempConfigPath = path.join(process.cwd(), "temp-electron-builder.json");
@@ -45,7 +45,13 @@ async function main() {
       await build({
         config: tempConfigPath,
         targets: new Map([
-          [Platform.LINUX, new Map([[Arch.x64, ["deb", "AppImage"]]])],
+          [
+            Platform.LINUX,
+            new Map([
+              [Arch.x64, ["deb", "AppImage"]],
+              [Arch.ia32, ["deb", "AppImage"]],
+            ]),
+          ],
         ]),
       });
     } else if (platform === "linux") {
@@ -53,14 +59,36 @@ async function main() {
       await build({
         config: tempConfigPath,
         targets: new Map([
-          [Platform.LINUX, new Map([[Arch.x64, ["deb", "AppImage"]]])],
+          [
+            Platform.LINUX,
+            new Map([
+              [Arch.x64, ["deb", "AppImage"]],
+              [Arch.ia32, ["deb", "AppImage"]],
+            ]),
+          ],
         ]),
       });
     } else if (platform === "win32") {
       console.log("Running on Windows. Building for Windows...");
       await build({
         config: tempConfigPath,
-        targets: new Map([[Platform.WINDOWS, new Map([[Arch.x64, ["nsis"]]])]]),
+        targets: new Map([
+          [
+            Platform.WINDOWS,
+            new Map([
+              [Arch.x64, ["nsis", "portable"]],
+              [Arch.ia32, ["nsis", "portable"]],
+            ]),
+          ],
+        ]),
+      });
+    } else if (platform === "darwin") {
+      console.log("Running on MacOS. Building for MacOS...");
+      await build({
+        config: tempConfigPath,
+        targets: new Map([
+          [Platform.MAC, new Map([["universal", ["dmg", "app"]]])],
+        ]),
       });
     } else {
       console.error("Unsupported platform:", platform);
