@@ -83,11 +83,11 @@ async function main() {
         ]),
       });
     } else if (platform === "darwin") {
-      console.log("Running on MacOS. Building for MacOS...");
+      console.log("Running on macOS. Building for macOS...");
       await build({
         config: tempConfigPath,
         targets: new Map([
-          [Platform.MAC, new Map([["universal", ["dmg", "app"]]])],
+          [Platform.MAC, new Map([["universal", ["dmg", "dir"]]])],
         ]),
       });
     } else {

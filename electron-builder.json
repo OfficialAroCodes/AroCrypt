@@ -67,7 +67,7 @@
   "mac": {
     "target": [
       "dmg",
-      "app"
+      "dir"
     ]
   },
   "nsis": {

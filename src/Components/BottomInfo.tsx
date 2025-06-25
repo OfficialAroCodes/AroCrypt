@@ -11,7 +11,7 @@ const BottomInfo = () => {
       <div className="bottominfo">
         <p className="bottominfo_text">
           {t("developed_by")}{" "}
-          <a onClick={() => useOpenLink("https://arocodes.rf.gd/")}>AroCodes</a>
+          <a onClick={() => useOpenLink("https://github.com/OfficialAroCodes/")}>AroCodes</a>
         </p>
         <p className="bottominfo_text">
           <a

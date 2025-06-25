@@ -1,6 +1,6 @@
 {
   "name": "arocrypt",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "main": "dist-electron/main/index.js",
   "description": "Strong encryption & steganography made simple — secure your data effortlessly with AroCodes’ trusted toolkit.",
   "homepage": "https://arocrypt.vercel.app",

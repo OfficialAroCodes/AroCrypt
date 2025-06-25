@@ -76,9 +76,11 @@
     "report_issue": "Report an Issue",
     "support_project": "Support Project",
     "about": "About AroCrypt",
+    "arocrypt_site": "AroCrypt Website",
     "about_page_info": "AroCrypt is a software for encryption and decrpytion text and files, image steganograhpy with auto encryption.",
     "about_dev_info": "A solo project developed by",
     "update_required": "Update Required!",
     "update_info": "A newer version of AroCrypt is available. Upgrading is recommended to maintain stability and prevent known issues.",
-    "update_to": "Update to"
+    "update_to": "Update to",
+    "open_github_rel": "Open Github Releases"
 }

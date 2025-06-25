@@ -18,7 +18,7 @@
 | Windows 10           | ✅     | ✅             |
 | Windows 11           | ✅     | ✅             |
 | Linux (Debian-based) | ✅     | ✅             |
-| MacOS 11+            | ❌     | ✅ & `(arm64)` |
+| macOS 11+            | ❌     | ✅ & `(arm64)` |
 
 ---
 
@@ -38,8 +38,8 @@
 
 - **Cross-Platform Support**
 
-  - **Windows** (`x64` & `x86`) — `.exe` Setup & Portable
-  - **Linux** (`x64` & `x86`) — `.AppImage` & `.deb`
+  - **Windows** (`x64` & `x32`) — `.exe` Setup & Portable
+  - **Linux** (`x64` & `x32`) — `.AppImage` & `.deb`
   - **macOS 11+** (`x64` & `arm64`) — `.app` & `.dmg`
 
 - **Modern UI**  
@@ -107,7 +107,7 @@ With key/IV randomization and optional HMAC protection for integrity. We’re co
 - Built with **Electron.js**, powered by **Node.js** and **React.js**.
 - Entirely written in **TypeScript** for type safety and maintainability.
 - Encryption logic is fully custom, using Node.js crypto APIs — no third-party libraries for core encryption.
-- Portable architecture: runs on Windows, Linux and MacOS.
+- Portable architecture: runs on Windows, Linux and macOS.
 
 ---
 

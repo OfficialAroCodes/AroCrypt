@@ -12,7 +12,7 @@ export default function AboutWindow(): JSX.Element {
       <div className="text_details">
         <h1>AroCrypt <span onClick={() =>  useOpenLink(`https://github.com/OfficialAroCodes/arocrypt/releases`)}>v{appVersion}</span></h1>
         <p className="app_info">{t("about_page_info")}</p>
-        <p className="dev_info">{t('about_dev_info')} <a onClick={() =>  useOpenLink("https://arocodes.rf.gd/")}>AroCodes</a>.</p>
+        <p className="dev_info">{t('about_dev_info')} <a onClick={() =>  useOpenLink("https://github.com/OfficialAroCodes")}>AroCodes</a>.</p>
       </div>
     </div>
   );

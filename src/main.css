@@ -1542,7 +1542,7 @@ nav {
   position: fixed;
   top: 45px;
   right: 10px;
-  transform: translateY(5px) scaleX(0.97);
+  transform: translateY(-8px) scale(0.97);
   opacity: 0;
   z-index: -1;
   visibility: hidden;

@@ -33,6 +33,7 @@ interface ElectronAPI {
   copyToClipboard: (text: string) => Promise<void>;
   openExternalLink: (url: string) => void;
   getAppVersion: () => Promise<string>;
+  getPlatform: () => Promise<string>;
 
   // Window Control
   minimizeWindow: () => Promise<void>;
@@ -107,6 +108,7 @@ const electronAPI: ElectronAPI = {
   copyToClipboard: (text) => navigator.clipboard.writeText(text),
   openExternalLink: (url) => ipcRenderer.send('open-external-link', url),
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  getPlatform: () => ipcRenderer.invoke('get-platform'),
 
   // Window Control
   minimizeWindow: () => ipcRenderer.invoke('minimize-window'),

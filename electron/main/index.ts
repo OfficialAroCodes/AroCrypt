@@ -536,6 +536,11 @@ ipcMain.on("open-external-link", (event, url) => {
   shell.openExternal(url);
 });
 
+ipcMain.handle("get-platform", () => {
+  return process.platform;
+});
+
+
 /* Secret Key Functions */
 
 ipcMain.handle("save-unique-key", async (event, key) => {

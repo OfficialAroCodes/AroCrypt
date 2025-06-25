@@ -51,6 +51,7 @@ interface ElectronAPI {
     copyToClipboard: (text: string) => Promise<void>;
     openExternalLink: (url: string) => void;
     getAppVersion: () => Promise<string>;
+    getPlatform: () => Promise<string>;
 
     // Window Control
     minimizeWindow: () => Promise<void>;
