@@ -67,8 +67,7 @@
   "mac": {
     "icon": "icons/mac/icon.icns",
     "target": [
-      "dmg",
-      "dir"
+      "dmg"
     ]
   },
   "nsis": {

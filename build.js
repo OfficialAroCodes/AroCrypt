@@ -90,8 +90,8 @@ async function main() {
           [
             Platform.MAC,
             new Map([
-              [Arch.x64, ["dmg", "dir"]],
-              [Arch.arm64, ["dmg", "dir"]],
+              [Arch.x64, ["dmg"]],
+              [Arch.arm64, ["dmg"]],
             ]),
           ],
         ]),

@@ -40,7 +40,7 @@
 
   - **Windows** (`x64` & `x32`) — `.exe` Setup & Portable
   - **Linux** (`x64` & `x32`) — `.AppImage` & `.deb`
-  - **macOS 11+** (`x64` & `arm64`) — `.app` & `.dmg`
+  - **macOS 11+** (`x64` & `arm64`) — `.dmg`
 
 - **Modern UI**  
   Sleek, intuitive design built for modern systems and workflows.
@@ -117,7 +117,7 @@ Since this app isn’t signed with an official Apple Developer ID, macOS will wa
 
 ### To install and run the app:
 
-1. Download the `.dmg` or `.app` file.
+1. Download the `.dmg` file.
 2. Open the app — macOS will block it and show a warning like:
    “App can’t be opened because it is from an unidentified developer.”
 3. To bypass this:
