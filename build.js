@@ -87,7 +87,13 @@ async function main() {
       await build({
         config: tempConfigPath,
         targets: new Map([
-          [Platform.MAC, new Map([["universal", ["dmg", "dir"]]])],
+          [
+            Platform.MAC,
+            new Map([
+              [Arch.x64, ["dmg", "dir"]],
+              [Arch.arm64, ["dmg", "dir"]],
+            ]),
+          ],
         ]),
       });
     } else {
