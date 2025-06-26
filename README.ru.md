@@ -17,7 +17,7 @@
 | Windows 8.1            | ✅     | ✅             |
 | Windows 10             | ✅     | ✅             |
 | Windows 11             | ✅     | ✅             |
-| Linux (на базе Debian) | ✅     | ✅             |
+| Linux (на базе Debian) | ❌     | ✅             |
 | macOS 11+              | ❌     | ✅ + `(arm64)` |
 
 ---
