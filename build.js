@@ -63,7 +63,6 @@ async function main() {
             Platform.LINUX,
             new Map([
               [Arch.x64, ["deb", "AppImage"]],
-              [Arch.ia32, ["deb", "AppImage"]],
             ]),
           ],
         ]),

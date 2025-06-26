@@ -39,7 +39,7 @@
 - **Кроссплатформенность**
 
   - **Windows** (`x64` & `x32`) — `.exe` Setup & Portable
-  - **Linux** (`x64` & `x32`) — `.AppImage` & `.deb`
+  - **Linux** (`x64`) — `.AppImage` & `.deb`
   - **macOS 11+** (`x64` & `arm64`) — `.dmg`
 
 - **Современный интерфейс**  
