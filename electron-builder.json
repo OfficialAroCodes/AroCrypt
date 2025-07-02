@@ -118,12 +118,11 @@
       "to": "certs/arocrypt.crt"
     },
     {
-      "from": "assets/scripts/config.nsi",
-      "to": "assets/scripts/"
-    },
-    {
-      "from": "assets/scripts/installer.manifest",
-      "to": "assets/scripts/"
+      "from": "assets",
+      "to": "assets",
+      "filter": [
+        "**/*"
+      ]
     }
   ]
 }

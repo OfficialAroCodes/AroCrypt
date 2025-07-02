@@ -1,4 +1,23 @@
-@import url("/assets/fonts/fonts.css");
+/* fonts */
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/assets/fonts/GeistMono/GeistMono-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Lora Variable */
+@font-face {
+  font-family: "Lora";
+  src: url("/assets/fonts/Lora/Lora-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* fonts end */
 
 * {
   padding: 0;

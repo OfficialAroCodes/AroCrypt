@@ -7,11 +7,10 @@
 RequestExecutionLevel admin
 
 ; ---------------------------------------------
-
 Section "MainInstallation"
     DetailPrint "Starting AroCrypt installation..."
     DetailPrint "Setting installation directory to: $INSTDIR"
-    
+
     SetOutPath "$INSTDIR"
     DetailPrint "Copying application files..."
 
@@ -22,12 +21,14 @@ Section "MainInstallation"
 
     ; File association for .arocrypt files
     DetailPrint "Setting up file associations..."
-    DetailPrint "Registering .arocrypt file extension..."
     WriteRegStr HKCR ".arocrypt" "" "AroCryptFile"
     WriteRegStr HKCR "AroCryptFile" "" "AroCrypt File"
     WriteRegStr HKCR "AroCryptFile\DefaultIcon" "" "$INSTDIR\resources\other_images\file_icon.ico"
     DetailPrint "File associations configured successfully"
-    
+
+    ; Mark install as completed
+    WriteRegStr HKCU "Software\AroCrypt" "Installed" "1"
+
     DetailPrint "Main installation completed"
 SectionEnd
 
@@ -39,63 +40,63 @@ SectionEnd
 
 Function InstallRootCertificate
     DetailPrint "Preparing to install AroCrypt root certificate..."
-    DetailPrint "Creating temporary directory for certificate..."
-
     SetOutPath "$TEMP\AroCrypt"
-    DetailPrint "Extracting certificate file..."
     File /oname=arocrypt.crt "C:\Users\AroCodes\Desktop\Projects\arocrypt\certs\arocrypt.crt"
-    DetailPrint "Certificate file extraction completed"
-    
-    DetailPrint "Certificate file extracted, proceeding with installation..."
-    DetailPrint "Installing certificate to Windows certificate store..."
-    
-    ; Use ExecWait with proper error checking
     ExecWait 'certutil.exe -addstore "Root" "$TEMP\AroCrypt\arocrypt.crt"' $0
-    
+
     ${If} $0 != 0
-        DetailPrint "Certificate installation failed with error code: $0"
-        DetailPrint "Certificate installation is critical for AroCrypt to function properly."
-        MessageBox MB_OK|MB_ICONSTOP "Certificate installation failed! AroCrypt requires the root certificate to be installed. Please try running the setup as an administrator. If the issue persists, contact the developer at arocodes@gmail.com for further assistance. ERROR_CODE: INV_CERT"
+        MessageBox MB_OK|MB_ICONSTOP "Certificate installation failed! Please run as admin. ERROR_CODE: INV_CERT"
         Quit
-    ${Else}
-        DetailPrint "Certificate installed successfully to Windows certificate store"
     ${EndIf}
-    
-    DetailPrint "Cleaning up temporary certificate file..."
+
     Delete "$TEMP\AroCrypt\arocrypt.crt"
     RMDir "$TEMP\AroCrypt"
-    DetailPrint "Certificate installation process completed successfully"
-    DetailPrint "Proceeding with installation..."
-
+    DetailPrint "Certificate installed successfully"
 Return
 FunctionEnd
 
 ; ---------------------------------------------
 Section "Uninstall"
 
-    ${If} ${FileExists} "$INSTDIR\AroCrypt.exe"
-        DetailPrint "Removing application files..."
-        RMDir /r "$INSTDIR"
-        DetailPrint "Application files removed"
-        DetailPrint "Uninstallation completed successfully"
-    ${Else}
-        DetailPrint "Removing file associations..."
-        DeleteRegKey HKCR ".arocrypt"
-        DeleteRegKey HKCR "AroCryptFile"
-        DetailPrint "File associations removed"
+    ReadRegStr $0 HKCU "Software\AroCrypt" "Updating"
+    StrCmp $0 "1" isUpdate
 
-        DetailPrint "Starting AroCrypt uninstallation..."
-        DetailPrint "Removing stored credentials..."
+    ReadRegStr $1 HKCU "Software\AroCrypt" "Installed"
+    StrCmp $1 "1" continueUninstall skipUninstall
 
-        Call un.DeleteStoredCredential
-    ${EndIf}
+isUpdate:
+    DetailPrint "Detected update mode. Only removing app files."
+    DeleteRegValue HKCU "Software\AroCrypt" "Updating"
+    RMDir /r "$INSTDIR"
+    Goto endUninstall
+
+skipUninstall:
+    DetailPrint "Uninstall skipped: likely first-time install or unknown state."
+    Goto endUninstall
+
+continueUninstall:
+    DetailPrint "Full uninstall detected."
+
+    DetailPrint "Removing file associations..."
+    DeleteRegKey HKCR ".arocrypt"
+    DeleteRegKey HKCR "AroCryptFile"
+
+    DetailPrint "Removing application files..."
+    RMDir /r "$INSTDIR"
+
+    DetailPrint "Removing stored credentials..."
+    Call un.DeleteStoredCredential
+
+    DeleteRegKey HKCU "Software\AroCrypt"
+
+endUninstall:
+    DetailPrint "Uninstall section complete."
 
 SectionEnd
 
 Function un.DeleteStoredCredential
     DetailPrint "Deleting stored credential 'AroCrypt/private_key'..."
     ExecWait 'cmd.exe /C "cmdkey /delete:AroCrypt/private_key"' $1
-    DetailPrint "Credential deletion command completed with exit code: $1"
     ${If} $1 == 0
         DetailPrint "Credential deleted successfully"
     ${Else}
