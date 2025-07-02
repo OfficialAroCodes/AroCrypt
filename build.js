@@ -62,14 +62,13 @@ async function main() {
         config: tempConfigPath,
         targets: new Map([
           // Change during real build!
-          /*           [
+          [
             Platform.WINDOWS,
             new Map([
               [Arch.x64, ["nsis", "portable"]],
               [Arch.ia32, ["nsis", "portable"]],
             ]),
-          ], */
-          [Platform.WINDOWS, new Map([[Arch.x64, ["nsis"]]])],
+          ],
         ]),
       });
     } else if (platform === "darwin") {
