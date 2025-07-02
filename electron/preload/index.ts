@@ -45,6 +45,8 @@ interface ElectronAPI {
   checkForUpdates: () => Promise<UpdateInfo | null>;
   onUpdateAvailable: (callback: (updateInfo: UpdateInfo & { isUpdateAvailable: boolean }) => void) => void;
   onUpdateNotAvailable: (callback: (updateInfo: UpdateInfo & { isUpdateAvailable: boolean }) => void) => void;
+
+  onUpdateDownloadProgress: (callback: (progress: { percent: number; transferred: number; total: number; bytesPerSecond: number }) => void) => void;
 }
 
 interface UpdateInfo {
@@ -125,6 +127,9 @@ const electronAPI: ElectronAPI = {
   onUpdateNotAvailable: (callback) => ipcRenderer.on('update-not-available', (_event, updateInfo) => {
     callback({ ...updateInfo, isUpdateAvailable: false });
   }),
+
+  onUpdateDownloadProgress: (callback: (progress: { percent: number; transferred: number; total: number; bytesPerSecond: number }) => void) =>
+    ipcRenderer.on('update-download-progress', (_event, progress) => callback(progress)),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);

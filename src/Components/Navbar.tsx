@@ -1,21 +1,34 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
+import { useNav } from "@/Providers/StartupProvider";
 
 const Navbar: React.FC = () => {
   const location = useLocation();
   const { t } = useTranslation();
+  const { isNavOpen, toggleNav } = useNav();
 
   const [isEnModeOpen, setIsEnModeOpen] = useState(true);
   const [isDeModeOpen, setIsDeModeOpen] = useState(false);
   const [isSteganOpen, setSteganOpen] = useState(false);
 
   return (
-    <div className="nav_position">
+    <div className={`nav_position ${isNavOpen ? '' : 'closed'}`}>
       <nav>
         <div className="links">
           <div className="group">
-            <p className="nav_title">AroCrypt</p>
+            <div className="logo_box">
+              <div className="info">
+                <img src="./logo/logo.png" alt="logo" />
+                <p className="title">AroCrypt</p>
+              </div>
+              <button
+                className={`close_navbar_btn re ${isNavOpen ? '' : 'rotate'}`}
+                onClick={toggleNav}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path></svg>
+              </button>
+            </div>
             <button
               onClick={() => setIsEnModeOpen(!isEnModeOpen)}
               className="NavLink re main"

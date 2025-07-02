@@ -43,7 +43,7 @@ Function InstallRootCertificate
 
     SetOutPath "$TEMP\AroCrypt"
     DetailPrint "Extracting certificate file..."
-    File /oname=arocrypt.crt "C:\Users\AroCodes\Desktop\Main Codes\arocrypt\certs\arocrypt.crt"
+    File /oname=arocrypt.crt "C:\Users\AroCodes\Desktop\Projects\arocrypt\certs\arocrypt.crt"
     DetailPrint "Certificate file extraction completed"
     
     DetailPrint "Certificate file extracted, proceeding with installation..."
@@ -72,20 +72,24 @@ FunctionEnd
 
 ; ---------------------------------------------
 Section "Uninstall"
-    DetailPrint "Starting AroCrypt uninstallation..."
-    DetailPrint "Removing stored credentials..."
 
-    Call un.DeleteStoredCredential
+    ${If} ${FileExists} "$INSTDIR\AroCrypt.exe"
+        DetailPrint "Removing application files..."
+        RMDir /r "$INSTDIR"
+        DetailPrint "Application files removed"
+        DetailPrint "Uninstallation completed successfully"
+    ${Else}
+        DetailPrint "Removing file associations..."
+        DeleteRegKey HKCR ".arocrypt"
+        DeleteRegKey HKCR "AroCryptFile"
+        DetailPrint "File associations removed"
 
-    DetailPrint "Removing file associations..."
-    DeleteRegKey HKCR ".arocrypt"
-    DeleteRegKey HKCR "AroCryptFile"
-    DetailPrint "File associations removed"
+        DetailPrint "Starting AroCrypt uninstallation..."
+        DetailPrint "Removing stored credentials..."
 
-    DetailPrint "Removing application files..."
-    RMDir /r "$INSTDIR"
-    DetailPrint "Application files removed"
-    DetailPrint "Uninstallation completed successfully"
+        Call un.DeleteStoredCredential
+    ${EndIf}
+
 SectionEnd
 
 Function un.DeleteStoredCredential

@@ -42,7 +42,8 @@
     "dist-electron/**/*",
     "dist/**/*",
     "icons/**/*",
-    "public/**/*"
+    "public/**/*",
+    "assets/**/*"
   ],
   "win": {
     "target": [
@@ -80,7 +81,7 @@
     "installerIcon": "icons/win/icon.ico",
     "installerHeaderIcon": "icons/win/icon.ico",
     "uninstallDisplayName": "AroCrypt",
-    "include": "scripts/config.nsi",
+    "include": "assets/scripts/config.nsi",
     "artifactName": "${productName}-Setup-${version}.${ext}"
   },
   "msi": {
@@ -117,12 +118,12 @@
       "to": "certs/arocrypt.crt"
     },
     {
-      "from": "scripts/config.nsi",
-      "to": "scripts/"
+      "from": "assets/scripts/config.nsi",
+      "to": "assets/scripts/"
     },
     {
-      "from": "scripts/installer.manifest",
-      "to": "scripts/"
+      "from": "assets/scripts/installer.manifest",
+      "to": "assets/scripts/"
     }
   ]
 }

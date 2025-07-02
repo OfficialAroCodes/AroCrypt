@@ -60,6 +60,7 @@ interface ElectronAPI {
     // Update
     onUpdateAvailable: (callback: (updateInfo: UpdateInfo & { isUpdateAvailable: boolean }) => void) => void;
     onUpdateNotAvailable: (callback: (updateInfo: UpdateInfo & { isUpdateAvailable: boolean }) => void) => void;
+    onUpdateDownloadProgress: (callback: (progress: { percent: number; transferred: number; total: number; bytesPerSecond: number }) => void) => void;
     checkForUpdates: () => Promise<UpdateInfo>;
     downloadUpdate?: () => Promise<void>;
     openAboutWindow: () => Promise<void>;

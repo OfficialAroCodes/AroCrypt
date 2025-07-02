@@ -5,7 +5,6 @@ import { safeWriteLog } from "./writeLog";
 export function sanitizeFilePath(inputPath: string, allowFileCreation: boolean = false): string {
     try {
         const normalizedPath = path.normalize(inputPath);
-
         const absolutePath = path.resolve(normalizedPath);
 
         if (!allowFileCreation && !fs.existsSync(absolutePath)) {
@@ -17,7 +16,7 @@ export function sanitizeFilePath(inputPath: string, allowFileCreation: boolean =
             fs.mkdirSync(directory, { recursive: true });
         }
 
-        return absolutePath.replace(/(["\s'$`\\])/g, '\\$1');
+        return absolutePath;
     } catch (error) {
         safeWriteLog(`Path sanitization error: ${error}`);
         throw new Error(`Invalid file path: ${inputPath}`);

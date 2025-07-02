@@ -6,54 +6,70 @@ import React, {
     ReactNode
 } from 'react';
 
-export const themes = ['dark_orange', 'dark_red', 'dark_green', 'dark_blue', 'dark_purple'] as const;
-export type Theme = typeof themes[number];
+const themeTypes = ['dark', 'light'] as const;
+const themeBrands = ['orange', 'red', 'green', 'blue', 'purple'] as const;
+export type ThemeType = typeof themeTypes[number];
+export type ThemeBrand = typeof themeBrands[number];
 
 interface ThemeContextType {
-    currentTheme: Theme;
-    setCurrentTheme: (theme: Theme) => void;
+    themeType: ThemeType;
+    setThemeType: (type: ThemeType) => void;
+    themeBrand: ThemeBrand;
+    setThemeBrand: (brand: ThemeBrand) => void;
+    theme: string;
 }
 
+const defaultType: ThemeType = 'dark';
+const defaultBrand: ThemeBrand = 'orange';
+
 const ThemeContext = createContext<ThemeContextType>({
-    currentTheme: 'dark_orange',
-    setCurrentTheme: () => { }
+    themeType: defaultType,
+    setThemeType: () => {},
+    themeBrand: defaultBrand,
+    setThemeBrand: () => {},
+    theme: `${defaultType}_${defaultBrand}`,
 });
 
 export const useTheme = () => useContext(ThemeContext);
 
+function parseThemeString(theme: string | null): [ThemeType, ThemeBrand] {
+    if (!theme) return [defaultType, defaultBrand];
+    const [type, brand] = theme.split('_');
+    if (themeTypes.includes(type as ThemeType) && themeBrands.includes(brand as ThemeBrand)) {
+        return [type as ThemeType, brand as ThemeBrand];
+    }
+    return [defaultType, defaultBrand];
+}
+
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [currentTheme, setCurrentTheme] = useState<Theme>(() => {
-        return (localStorage.getItem('theme') as Theme) || 'dark_orange';
+    const [themeType, setThemeType] = useState<ThemeType>(() => {
+        const [type] = parseThemeString(localStorage.getItem('theme'));
+        return type;
+    });
+    const [themeBrand, setThemeBrand] = useState<ThemeBrand>(() => {
+        const [, brand] = parseThemeString(localStorage.getItem('theme'));
+        return brand;
     });
 
-    useEffect(() => {
-        document.documentElement.setAttribute('data-theme', currentTheme);
-
-        localStorage.setItem('theme', currentTheme);
-    }, [currentTheme]);
+    const theme = `${themeType}_${themeBrand}`;
 
     useEffect(() => {
-        const savedTheme = localStorage.getItem('theme') as Theme;
-        if (savedTheme && themes.includes(savedTheme)) {
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        }
-    }, []);
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+    }, [theme]);
 
     return (
-        <ThemeContext.Provider value={{ currentTheme, setCurrentTheme }}>
+        <ThemeContext.Provider value={{ themeType, setThemeType, themeBrand, setThemeBrand, theme }}>
             {children}
         </ThemeContext.Provider>
     );
 };
 
 export const initializeTheme = () => {
-    const savedTheme = localStorage.getItem('theme') as Theme;
-    if (savedTheme && themes.includes(savedTheme)) {
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    } else {
-        document.documentElement.setAttribute('data-theme', 'dark_orange');
-        localStorage.setItem('theme', 'dark_orange');
-    }
+    const theme = localStorage.getItem('theme');
+    const [type, brand] = parseThemeString(theme);
+    document.documentElement.setAttribute('data-theme', `${type}_${brand}`);
+    localStorage.setItem('theme', `${type}_${brand}`);
 };
 
 initializeTheme();

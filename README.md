@@ -30,7 +30,7 @@
 - **File Encryption & Decryption**  
   Encrypt or decrypt files of any type with reliable AES encryption, outputting `.arocrypt` formatted secure files.
 
-- **Image Steganography** _(New)_  
+- **Image Steganography** 
   Hide files inside `.png` images with automatic encryption. Only the correct key can extract the original content. Perfect for ultra-discreet file sharing.
 
 - **Secure Key Generation & Management**  

@@ -1,5 +1,5 @@
 import CopyText from "@/Utils/copyText";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../store";
@@ -22,7 +22,7 @@ const Encryption: React.FC = () => {
 
   const handleEncrypt = async () => {
     if (!inputText) {
-      setInputText("/Nothing to encrypt/")
+      setInputText(encryptText)
       return;
     }
 
@@ -110,7 +110,7 @@ const Encryption: React.FC = () => {
         </div>
         <button
           className="main_button re"
-          disabled={!inputText}
+          disabled={!encryptText}
           onClick={handleEncrypt}
         >
           {t("encrypt_text")}

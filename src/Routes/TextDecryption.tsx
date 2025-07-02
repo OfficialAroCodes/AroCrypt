@@ -35,7 +35,7 @@ const Decryption: React.FC = () => {
 
       if (decryptedResult === "invalid") {
         setIsIncorrectKey(true);
-        dispatch(setDecryptedText(""));
+        dispatch(setDecryptedText(t("text_decrypt_fail")));
         return;
       }
 
@@ -58,7 +58,7 @@ const Decryption: React.FC = () => {
     <>
       <div className="page_content">
         <p className="page_header">{t("text_decryption")}</p>
-        <div className={`InputContainer ${isIncorrectKey ? "invalid" : ""}`}>
+        <div className={`InputContainer`}>
           <label>{t("packed_public_keys")}</label>
           <input
             spellCheck="false"
@@ -74,8 +74,8 @@ const Decryption: React.FC = () => {
           <textarea
             spellCheck="false"
             className={`Input Textarea active`}
-            disabled
             placeholder=""
+            readOnly
             value={decrypted_text}
           ></textarea>
         </div>

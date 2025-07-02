@@ -34,11 +34,23 @@ const UpdateModal = () => {
     }, []);
 
     const [isLoading, setIsLoading] = useState(false);
+    const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
 
     const handleDownloadUpdate = () => {
         setIsLoading(true);
         window.electronAPI.downloadUpdate?.();
     };
+
+    useEffect(() => {
+        if (!isLoading) return;
+        const handleProgress = (progress: { percent: number }) => {
+            setDownloadProgress(progress.percent);
+        };
+        window.electronAPI.onUpdateDownloadProgress(handleProgress);
+        return () => {
+            // No way to remove listener with current API, but safe for now
+        };
+    }, [isLoading]);
 
     // Get OS info: mac, win, or linux
     const [osType, setOsType] = useState<'mac' | 'win' | 'linux' | null>(null);
@@ -63,7 +75,7 @@ const UpdateModal = () => {
     }, []);
 
     return (
-        <div className={`modal_box ${isUpdateAvailable && 'Show'}`}>
+        <div className={`modal_box update_box ${isUpdateAvailable && 'Show'}`}>
             <div className="modal_content update_modal">
                 <div className='update_box'>
                     <div className='icon'>
@@ -83,46 +95,33 @@ const UpdateModal = () => {
                             </button>
 
                         ) : (
-                            <button
-                                className='main_button re'
-                                disabled={isLoading}
-                                onClick={handleDownloadUpdate}
-                            >
-                                {isLoading ? (
+                            isLoading ? (
+                                <>
+                                    <div className='progressbar_box'>
+                                        <div className='text_info'>
+                                            <p className='text'>{t('downloading')}</p>
+                                            <p className='percent'>{downloadProgress !== null ? `${downloadProgress.toFixed(1)}%` : "0%"} / 100%</p>
+                                        </div>
+                                        <div className='progressbar'>
+                                            <div className='line' style={{
+                                                width: `${downloadProgress ?? 0}%`,
+                                            }} />
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <button
+                                    className='main_button re'
+                                    disabled={isLoading}
+                                    onClick={handleDownloadUpdate}
+                                >
+
                                     <>
-                                        <svg
-                                            className="btn_container"
-                                            viewBox="0 0 40 40"
-                                            height="40"
-                                            width="40"
-                                        >
-                                            <circle
-                                                className="track"
-                                                cx="20"
-                                                cy="20"
-                                                r="17.5"
-                                                pathLength="100"
-                                                stroke-width="5px"
-                                                fill="none"
-                                            />
-                                            <circle
-                                                className="car"
-                                                cx="20"
-                                                cy="20"
-                                                r="17.5"
-                                                pathLength="100"
-                                                stroke-width="5px"
-                                                fill="none"
-                                            />
-                                        </svg>
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M232,136v64a8,8,0,0,1-8,8H32a8,8,0,0,1-8-8V136a8,8,0,0,1,8-8H224A8,8,0,0,1,232,136Z" opacity="0.2"></path><path d="M240,136v64a16,16,0,0,1-16,16H32a16,16,0,0,1-16-16V136a16,16,0,0,1,16-16H72a8,8,0,0,1,0,16H32v64H224V136H184a8,8,0,0,1,0-16h40A16,16,0,0,1,240,136Zm-117.66-2.34a8,8,0,0,0,11.32,0l48-48a8,8,0,0,0-11.32-11.32L136,108.69V24a8,8,0,0,0-16,0v84.69L85.66,74.34A8,8,0,0,0,74.34,85.66ZM200,168a12,12,0,1,0-12,12A12,12,0,0,0,200,168Z"></path></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 256 256"><path d="M232,136v64a8,8,0,0,1-8,8H32a8,8,0,0,1-8-8V136a8,8,0,0,1,8-8H224A8,8,0,0,1,232,136Z" opacity="0.2"></path><path d="M240,136v64a16,16,0,0,1-16,16H32a16,16,0,0,1-16-16V136a16,16,0,0,1,16-16H72a8,8,0,0,1,0,16H32v64H224V136H184a8,8,0,0,1,0-16h40A16,16,0,0,1,240,136Zm-117.66-2.34a8,8,0,0,0,11.32,0l48-48a8,8,0,0,0-11.32-11.32L136,108.69V24a8,8,0,0,0-16,0v84.69L85.66,74.34A8,8,0,0,0,74.34,85.66ZM200,168a12,12,0,1,0-12,12A12,12,0,0,0,200,168Z"></path></svg>
                                         {t('update_to')} v{updateVersion}
                                     </>
-                                )}
-                            </button>
+                                </button>
+                            )
                         )
                     }
                 </div>

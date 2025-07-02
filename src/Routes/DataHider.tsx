@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 interface HidingDataFile {
     originalPath: string;
     hidingDataPath: string | { outputPath: string; response: any };
+    hiddenFiles: File[];
 }
 
 interface File {
@@ -86,6 +87,7 @@ const DataHider = () => {
                 {
                     originalPath: imagePath,
                     hidingDataPath,
+                    hiddenFiles: secretFiles,
                 },
             ]);
 
@@ -228,8 +230,8 @@ const DataHider = () => {
                             >
                                 <thead>
                                     <tr>
-                                        <th>{t('original_files')}</th>
-                                        <th>{t('result')}</th>
+                                        <th>{t('image')}</th>
+                                        <th>{t('embedded_files')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -237,9 +239,9 @@ const DataHider = () => {
                                         <tr key={index}>
                                             <td>{file.originalPath.split("\\").pop()}</td>
                                             <td>
-                                                {typeof file.hidingDataPath === 'string'
-                                                    ? file.hidingDataPath.split("\\").pop()
-                                                    : file.hidingDataPath.outputPath?.split("\\").pop() || 'N/A'}
+                                                {file.hiddenFiles.map((f, i) => (
+                                                    <span key={i}>{f.name}{i !== file.hiddenFiles.length - 1 ? ', ' : ''}</span>
+                                                ))}
                                             </td>
                                         </tr>
                                     ))}

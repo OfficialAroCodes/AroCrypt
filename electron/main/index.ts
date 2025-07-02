@@ -25,7 +25,6 @@ import pkg from "electron-updater";
 import hideDataInImage from "./utils/hideDataInImage";
 import extractHiddenData from "./utils/extractHiddenData";
 import moveExtractedFiles from "./utils/moveExtractedFiles";
-import { generateKey } from "./utils/crypto";
 
 let PRIVATE_KEY: string | null = null;
 
@@ -88,6 +87,11 @@ function configureAutoUpdater() {
     autoUpdater.on("error", (err) => {
       safeWriteLog(`Update error: ${err.message}`);
       ipcMain.emit("update-error", err);
+    });
+
+    autoUpdater.on("download-progress", (progressObj) => {
+      safeWriteLog(`Update download progress: ${progressObj.percent}%`);
+      win?.webContents.send("update-download-progress", progressObj);
     });
 
     // IPC handler for checking updates
@@ -362,11 +366,9 @@ ipcMain.handle(
 
       const finalOutputPath = saveDialogResult.filePath;
 
-      const decryptedPath = decryptFile(inputPath, method, PRIVATE_KEY);
+      const decryptedPath = await decryptFile(inputPath, method, PRIVATE_KEY, finalOutputPath);
 
-      fs.copyFileSync(await decryptedPath, finalOutputPath);
-
-      return finalOutputPath;
+      return decryptedPath;
     } catch (error) {
       console.error("Decryption error:", error);
 

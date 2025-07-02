@@ -16,6 +16,7 @@ import AboutWindow from '@/Components/AboutWindow';
 import { ThemeProvider, initializeTheme } from '@Providers/ThemeProvider';
 import RippleProvider from '@/Providers/RippleProvider';
 import KeyProvider from './Providers/KeyProvider';
+import StartupProvider from './Providers/StartupProvider';
 
 /* info: Routes */
 import FileEncryption from '@/Routes/FileEncryption';
@@ -48,32 +49,34 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                     <Provider store={store}>
                         <RippleProvider>
                             <ThemeProvider>
-                                <HashRouter>
-                                    <UpdateModal />
-                                    <KeyProvider />
-                                    <Algorithm />
-                                    <Titlebar isAbout={false} />
-                                    <Routes>
-                                        <Route path="/" element={<TextEncryption />} />
-                                        {/* Encryption Routes */}
-                                        <Route path="/encryption/text" element={<TextEncryption />} />
-                                        <Route path="/encryption/file" element={<FileEncryption />} />
+                                <StartupProvider>
+                                    <HashRouter>
+                                        <UpdateModal />
+                                        <KeyProvider />
+                                        <Algorithm />
+                                        <Titlebar isAbout={false} />
+                                        <Routes>
+                                            <Route path="/" element={<TextEncryption />} />
+                                            {/* Encryption Routes */}
+                                            <Route path="/encryption/text" element={<TextEncryption />} />
+                                            <Route path="/encryption/file" element={<FileEncryption />} />
 
-                                        {/* Decryption Routes */}
-                                        <Route path="/decryption/text" element={<TextDecryption />} />
-                                        <Route path="/decryption/file" element={<FileDecryption />} />
+                                            {/* Decryption Routes */}
+                                            <Route path="/decryption/text" element={<TextDecryption />} />
+                                            <Route path="/decryption/file" element={<FileDecryption />} />
 
-                                        {/* Steganography Routes */}
-                                        <Route path="/steganography/hide" element={<DataHider />} />
-                                        <Route path="/steganography/extract" element={<DataExtractor />} />
+                                            {/* Steganography Routes */}
+                                            <Route path="/steganography/hide" element={<DataHider />} />
+                                            <Route path="/steganography/extract" element={<DataExtractor />} />
 
-                                        {/* Settings Routes */}
-                                        <Route path="/settings" element={<Settings />} />
-                                        <Route path="/settings/appearance" element={<AppearanceSettings />} />
-                                    </Routes>
-                                    <Navbar />
-                                    <SettingsNav />
-                                </HashRouter>
+                                            {/* Settings Routes */}
+                                            <Route path="/settings" element={<Settings />} />
+                                            <Route path="/settings/appearance" element={<AppearanceSettings />} />
+                                        </Routes>
+                                        <Navbar />
+                                        <SettingsNav />
+                                    </HashRouter>
+                                </StartupProvider>
                             </ThemeProvider>
                         </RippleProvider>
                     </Provider>

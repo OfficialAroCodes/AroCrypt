@@ -1,23 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import React from 'react';
+import { useTheme } from '@/Providers/ThemeProvider';
 
-const themes = ['dark_red', 'dark_orange', 'dark_green', 'dark_blue', 'dark_purple'] as const;
+const themes = ['red', 'orange', 'green', 'blue', 'purple'] as const;
 type Theme = typeof themes[number];
 
 const ThemeSettings: React.FC = () => {
-    const { t } = useTranslation();
-    const [currentTheme, setCurrentTheme] = useState<Theme>(() => {
-        return (localStorage.getItem('theme') as Theme) || 'dark_purple';
-    });
-
-    useEffect(() => {
-        document.documentElement.setAttribute('data-theme', currentTheme);
-
-        localStorage.setItem('theme', currentTheme);
-    }, [currentTheme]);
+    const { themeBrand, setThemeBrand } = useTheme();
 
     const handleThemeChange = (theme: Theme) => {
-        setCurrentTheme(theme);
+        setThemeBrand(theme);
     };
 
     return (
@@ -26,7 +17,7 @@ const ThemeSettings: React.FC = () => {
                 <span
                     key={theme}
                     id={theme}
-                    className={`select_theme_box ${theme} re ${currentTheme === theme ? 'active' : ''}`}
+                    className={`select_theme_box ${theme} re ${themeBrand === theme ? 'active' : ''}`}
                     onClick={() => handleThemeChange(theme)}
                 />
             ))}

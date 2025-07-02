@@ -45,12 +45,7 @@ async function main() {
       await build({
         config: tempConfigPath,
         targets: new Map([
-          [
-            Platform.LINUX,
-            new Map([
-              [Arch.x64, ["deb", "AppImage"]],
-            ]),
-          ],
+          [Platform.LINUX, new Map([[Arch.x64, ["deb", "AppImage"]]])],
         ]),
       });
     } else if (platform === "linux") {
@@ -58,12 +53,7 @@ async function main() {
       await build({
         config: tempConfigPath,
         targets: new Map([
-          [
-            Platform.LINUX,
-            new Map([
-              [Arch.x64, ["deb", "AppImage"]],
-            ]),
-          ],
+          [Platform.LINUX, new Map([[Arch.x64, ["deb", "AppImage"]]])],
         ]),
       });
     } else if (platform === "win32") {
@@ -71,13 +61,15 @@ async function main() {
       await build({
         config: tempConfigPath,
         targets: new Map([
-          [
+          // Change during real build!
+          /*           [
             Platform.WINDOWS,
             new Map([
               [Arch.x64, ["nsis", "portable"]],
               [Arch.ia32, ["nsis", "portable"]],
             ]),
-          ],
+          ], */
+          [Platform.WINDOWS, new Map([[Arch.x64, ["nsis"]]])],
         ]),
       });
     } else if (platform === "darwin") {

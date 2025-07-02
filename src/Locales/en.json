@@ -34,6 +34,7 @@
     "encrypted_files": "Encrypted File(s)",
     "extracted_files": "Extracted File(s)",
     "data_embedding": "Data Embedding",
+    "embedded_files": "Embedded File(s)",
     "embedding_files": "Embedding File(s)...",
     "data_embedding_info": "Embedding encrypts files automatically using your chosen algorithm.",
     "data_extractor": "Data Extractor",
@@ -65,9 +66,9 @@
     "apply": "Apply",
     "change": "Change",
     "interface_language": "Interface Language",
-    "interface_language_info": "Set the application’s display language.",
+    "interface_language_info": "Select the language for the application’s interface and messages.",
     "brand_color": "Brand Color",
-    "brand_color_info": "Customize the theme color of the interface.",
+    "brand_color_info": "Customize the main brand color used across the application’s interface.",
     "image_file_selected": "Image File Selected",
     "change_private_key": "Change Private Key",
     "set_private_key": "Set Private Key",
@@ -76,11 +77,19 @@
     "report_issue": "Report an Issue",
     "support_project": "Support Project",
     "about": "About AroCrypt",
-    "arocrypt_site": "AroCrypt Website",
+    "arocrypt_site": "Official Site",
     "about_page_info": "AroCrypt is a software for encryption and decrpytion text and files, image steganograhpy with auto encryption.",
     "about_dev_info": "A solo project developed by",
     "update_required": "Update Required!",
     "update_info": "A newer version of AroCrypt is available. Upgrading is recommended to maintain stability and prevent known issues.",
     "update_to": "Update to",
-    "open_github_rel": "Open Github Releases"
+    "downloading": "Downloading...",
+    "open_github_rel": "Open Github Releases",
+    "app_theme": {
+        "title": "Application Theme",
+        "desc": "Customize the application's interface to suit your visual preferences.",
+        "light": "Light",
+        "dark": "Dark"
+    },
+    "text_decrypt_fail": "Failed to decrypt text. This may be due to corrupted packed public keys, an incorrect private key, or an invalid decryption algorithm selected."
 }
