@@ -61,7 +61,6 @@ async function main() {
       await build({
         config: tempConfigPath,
         targets: new Map([
-          // Change during real build!
           [
             Platform.WINDOWS,
             new Map([
