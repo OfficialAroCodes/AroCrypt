@@ -85,6 +85,7 @@ const Navbar: React.FC = () => {
                   </svg>
                   <p className="NavLinkName">{t('encrypt_text')}</p>
                 </div>
+                <span className="tooltip">{t('encrypt_text')}</span>
               </Link>
               <Link
                 to="/encryption/file"
@@ -107,6 +108,7 @@ const Navbar: React.FC = () => {
                   </svg>
                   <p className="NavLinkName">{t('encrypt_file')}</p>
                 </div>
+                <span className="tooltip">{t('encrypt_file')}</span>
               </Link>
             </div>
             <button
@@ -165,6 +167,7 @@ const Navbar: React.FC = () => {
                   </svg>
                   <p className="NavLinkName">{t('decrypt_text')}</p>
                 </div>
+                <span className="tooltip">{t('decrypt_text')}</span>
               </Link>
               <Link
                 to="/decryption/file"
@@ -187,6 +190,7 @@ const Navbar: React.FC = () => {
                   </svg>
                   <p className="NavLinkName">{t('decrypt_file')}</p>
                 </div>
+                <span className="tooltip">{t('decrypt_file')}</span>
               </Link>
             </div>
             <button
@@ -221,6 +225,7 @@ const Navbar: React.FC = () => {
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M128,129.09V232a8,8,0,0,1-3.84-1l-88-48.18a8,8,0,0,1-4.16-7V80.18a8,8,0,0,1,.7-3.25Z" opacity="0.2"></path><path d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,32l80.34,44-29.77,16.3-80.35-44ZM128,120,47.66,76l33.9-18.56,80.34,44ZM40,90l80,43.78v85.79L40,175.82Zm176,85.78h0l-80,43.79V133.82l32-17.51V152a8,8,0,0,0,16,0V107.55L216,90v85.77Z"></path></svg>
                   <p className="NavLinkName">{t('embed_data')}</p>
                 </div>
+                <span className="tooltip">{t('embed_data')}</span>
               </Link>
               <Link
                 to="/steganography/extract"
@@ -231,6 +236,7 @@ const Navbar: React.FC = () => {
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M208,88v24H69.77a8,8,0,0,0-7.59,5.47L32,208V64a8,8,0,0,1,8-8H93.33a8,8,0,0,1,4.8,1.6L128,80h72A8,8,0,0,1,208,88Z" opacity="0.2"></path><path d="M245,110.64A16,16,0,0,0,232,104H216V88a16,16,0,0,0-16-16H130.67L102.94,51.2a16.14,16.14,0,0,0-9.6-3.2H40A16,16,0,0,0,24,64V208a8,8,0,0,0,8,8H211.1a8,8,0,0,0,7.59-5.47l28.49-85.47A16.05,16.05,0,0,0,245,110.64ZM93.34,64,123.2,86.4A8,8,0,0,0,128,88h72v16H69.77a16,16,0,0,0-15.18,10.94L40,158.7V64Zm112,136H43.1l26.67-80H232Z"></path></svg>
                   <p className="NavLinkName">{t('extract_data')}</p>
                 </div>
+                <span className="tooltip">{t('extract_data')}</span>
               </Link>
             </div>
           </div>
@@ -258,6 +264,7 @@ const Navbar: React.FC = () => {
                 </svg>
                 <p className="NavLinkName">{t("settings")}</p>
               </div>
+              <span className="tooltip">{t('settings')}</span>
             </Link>
           </div>
         </div>

@@ -91,5 +91,8 @@
         "light": "Light",
         "dark": "Dark"
     },
-    "text_decrypt_fail": "Failed to decrypt text. This may be due to corrupted packed public keys, an incorrect private key, or an invalid decryption algorithm selected."
+    "text_decrypt_fail": "Failed to decrypt text. This may be due to corrupted packed public keys, an incorrect private key, or an invalid decryption algorithm selected.",
+    "view_unpacked": "View unpacked",
+    "unpacked_public_keys": "Unpacked Public Keys",
+    "safe_to_share": "These keys contain public data and are safe to share."
 }

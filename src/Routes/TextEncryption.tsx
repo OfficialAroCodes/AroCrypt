@@ -3,15 +3,14 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../store";
-import {
-  setOutputPackedKeys,
-  setEncryptText,
-} from "../store/encryptionSlice";
+import { setOutputPackedKeys, setEncryptText } from "../store/encryptionSlice";
 import BottomInfo from "@/Components/BottomInfo";
+import ViewUnpackedKeys from "@/Components/ViewUnpackedKeys";
 
 const Encryption: React.FC = () => {
   const { t } = useTranslation();
   const [inputText, setInputText] = useState("");
+  const [isViewKeysModalOpen, setIsViewKeysModalOpen] = useState(false);
 
   const dispatch = useDispatch();
   const { output_PackedKeys, encryptText } = useSelector(
@@ -22,12 +21,12 @@ const Encryption: React.FC = () => {
 
   const handleEncrypt = async () => {
     if (!inputText) {
-      setInputText(encryptText)
+      setInputText(encryptText);
       return;
     }
 
     if (!en_method) {
-      setInputText("/Encryption method not found./")
+      setInputText("/Encryption method not found./");
       return;
     }
 
@@ -84,7 +83,15 @@ const Encryption: React.FC = () => {
         </div>
         <div className="key_input_container">
           <div className="InputContainer">
-            <label>{t("packed_public_keys")}</label>
+            <div className="labels">
+              <label>{t("packed_public_keys")}</label>
+              <label
+                className={`clickable ${!output_PackedKeys ? 'disabled' : ''}`}
+                onClick={() => output_PackedKeys ? setIsViewKeysModalOpen(true) : ''}
+              >
+                {t('view_unpacked')}
+              </label>
+            </div>
             <input
               spellCheck="false"
               id="outputText"
@@ -116,6 +123,14 @@ const Encryption: React.FC = () => {
           {t("encrypt_text")}
         </button>
         <BottomInfo />
+      </div>
+
+      <div className={`modal_box ${isViewKeysModalOpen ? "Show" : ""}`}>
+        <ViewUnpackedKeys
+          isShown={isViewKeysModalOpen}
+          packedKeys={output_PackedKeys}
+          onClose={setIsViewKeysModalOpen}
+        />
       </div>
     </>
   );
