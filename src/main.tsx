@@ -12,11 +12,19 @@ import Navbar from '@/Components/Navbar';
 import UpdateModal from '@/Components/UpdateModal';
 import AboutWindow from '@/Components/AboutWindow';
 
+/* info: Utils */
+import Algorithm from './Utils/AlgorithmUtil';
+
 /* info: Providers */
 import { ThemeProvider, initializeTheme } from '@Providers/ThemeProvider';
 import RippleProvider from '@/Providers/RippleProvider';
-import KeyProvider from './Providers/KeyProvider';
 import StartupProvider from './Providers/StartupProvider';
+import { DecryptProvider } from '@/Context/DecryptContext';
+import { EncryptProvider } from '@/Context/EncryptContext';
+import { ToastProvider } from '@/Context/ToastContext';
+import { KeysMainProvider } from '@/Context/KeysContext';
+import { ExtractProvider } from '@/Context/ExtractContext';
+import { EmbedProvider } from '@/Context/EmbedContext';
 
 /* info: Routes */
 import FileEncryption from '@/Routes/FileEncryption';
@@ -25,10 +33,10 @@ import TextDecryption from "@/Routes/TextDecryption";
 import FileDecryption from '@/Routes/FileDecryption';
 import Settings from '@/Routes/Settings';
 import AppearanceSettings from '@/Routes/tabs/Appearance';
-import SettingsNav from './Routes/components/SettingsNav';
-import DataHider from './Routes/DataHider';
-import DataExtractor from './Routes/DataExtracter';
-import Algorithm from './Utils/AlgorithmUtil';
+import SettingsNav from '@/Routes/components/SettingsNav';
+import DataHider from '@/Routes/DataHider';
+import DataExtractor from '@/Routes/DataExtracter';
+
 
 initializeTheme();
 
@@ -46,40 +54,52 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 </>
             )
                 : (
-                    <Provider store={store}>
-                        <RippleProvider>
-                            <ThemeProvider>
-                                <StartupProvider>
-                                    <HashRouter>
-                                        <UpdateModal />
-                                        <KeyProvider />
-                                        <Algorithm />
-                                        <Titlebar isAbout={false} />
-                                        <Routes>
-                                            <Route path="/" element={<TextEncryption />} />
-                                            {/* Encryption Routes */}
-                                            <Route path="/encryption/text" element={<TextEncryption />} />
-                                            <Route path="/encryption/file" element={<FileEncryption />} />
+                    <ToastProvider>
 
-                                            {/* Decryption Routes */}
-                                            <Route path="/decryption/text" element={<TextDecryption />} />
-                                            <Route path="/decryption/file" element={<FileDecryption />} />
+                        <Provider store={store}>
+                            <KeysMainProvider>
+                                <RippleProvider>
+                                    <ThemeProvider>
+                                        <StartupProvider>
+                                            <HashRouter>
+                                                <UpdateModal />
+                                                <Algorithm />
+                                                <Titlebar isAbout={false} />
+                                                <EncryptProvider>
+                                                    <DecryptProvider>
+                                                        <ExtractProvider>
+                                                            <EmbedProvider>
+                                                                <Routes>
+                                                                    <Route path="/" element={<TextEncryption />} />
+                                                                    {/* Encryption Routes */}
+                                                                    <Route path="/encryption/text" element={<TextEncryption />} />
+                                                                    <Route path="/encryption/file" element={<FileEncryption />} />
 
-                                            {/* Steganography Routes */}
-                                            <Route path="/steganography/hide" element={<DataHider />} />
-                                            <Route path="/steganography/extract" element={<DataExtractor />} />
+                                                                    {/* Decryption Routes */}
+                                                                    <Route path="/decryption/text" element={<TextDecryption />} />
+                                                                    <Route path="/decryption/file" element={<FileDecryption />} />
 
-                                            {/* Settings Routes */}
-                                            <Route path="/settings" element={<Settings />} />
-                                            <Route path="/settings/appearance" element={<AppearanceSettings />} />
-                                        </Routes>
-                                        <Navbar />
-                                        <SettingsNav />
-                                    </HashRouter>
-                                </StartupProvider>
-                            </ThemeProvider>
-                        </RippleProvider>
-                    </Provider>
+                                                                    {/* Steganography Routes */}
+                                                                    <Route path="/steganography/hide" element={<DataHider />} />
+                                                                    <Route path="/steganography/extract" element={<DataExtractor />} />
+
+                                                                    {/* Settings Routes */}
+                                                                    <Route path="/settings" element={<Settings />} />
+                                                                    <Route path="/settings/appearance" element={<AppearanceSettings />} />
+                                                                </Routes>
+                                                            </EmbedProvider>
+                                                        </ExtractProvider>
+                                                    </DecryptProvider>
+                                                </EncryptProvider>
+                                                <Navbar />
+                                                <SettingsNav />
+                                            </HashRouter>
+                                        </StartupProvider>
+                                    </ThemeProvider>
+                                </RippleProvider>
+                            </KeysMainProvider>
+                        </Provider>
+                    </ToastProvider>
                 )}
     </React.StrictMode>,
 )

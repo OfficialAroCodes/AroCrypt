@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-const DEFAULT_ENCRYPTION_METHOD = 'aes-256-cbc';
+const DEFAULT_ENCRYPTION_METHOD = 'AES-256-GCM';
 
 interface EncryptionMethodState {
     encryptionMethod: string;

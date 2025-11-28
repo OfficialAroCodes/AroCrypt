@@ -4,21 +4,21 @@ interface ModalAlertBoxProps {
     header: string;
     text_info: string;
     type: number;
-    changable: boolean;
+    changeable: boolean;
 }
 
-const ModalAlertBox: React.FC<ModalAlertBoxProps> = ({ header, text_info, type, changable }) => {
+const ModalAlertBox: React.FC<ModalAlertBoxProps> = ({ header, text_info, type, changeable }) => {
     const [isInfoBlockOpen, setIsInfoBlockOpen] = useState(false);
 
     const toggleBox = () => {
-        if (changable) {
+        if (changeable) {
             setIsInfoBlockOpen(!isInfoBlockOpen);
         }
     }
 
     return (
         <div
-            className={`info_block ${type === 0 ? "info" : "warning"} ${changable && 'cp'}  ${isInfoBlockOpen || !changable ? "open" : ""}`}
+            className={`info_block ${type === 0 ? "info" : "warning"} ${changeable && 'cp'}  ${isInfoBlockOpen || !changeable ? "open" : ""}`}
             onClick={toggleBox}
         >
             <div className='modal_info_block_textes'>
@@ -34,7 +34,7 @@ const ModalAlertBox: React.FC<ModalAlertBoxProps> = ({ header, text_info, type, 
                         {header}
                     </p>
                     {
-                        changable && (
+                        changeable && (
                             <div className={`modal_info_top_icon ${isInfoBlockOpen ? "open" : ""}`}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M6 9l6 6l6 -6" /></svg>
                             </div>

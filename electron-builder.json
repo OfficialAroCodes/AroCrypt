@@ -12,7 +12,7 @@
     ".env"
   ],
   "directories": {
-    "output": "release/${version}"
+    "output": "releases/${version}"
   },
   "publish": [
     {
@@ -24,7 +24,7 @@
   ],
   "files": [
     "!src/**",
-    "!release/**",
+    "!releases/**",
     "!logs/**",
     "!**/*.map",
     "!**/*.ts",
@@ -41,7 +41,6 @@
     "!**/node_modules/**/test/**",
     "dist-electron/**/*",
     "dist/**/*",
-    "icons/**/*",
     "public/**/*",
     "assets/**/*"
   ],
@@ -51,22 +50,21 @@
       "msi",
       "portable"
     ],
-    "icon": "icons/win/icon.ico",
-    "requestedExecutionLevel": "requireAdministrator",
+    "icon": "assets/images/app-icons/win/icon.ico",
     "cscLink": "./certs/arocrypt.pfx",
     "cscKeyPassword": "${CERT_PASSWORD}",
     "forceCodeSigning": true
   },
   "linux": {
     "category": "Utility",
-    "icon": "icons/png",
+    "icon": "assets/images/app-icons/png",
     "target": [
       "deb",
       "AppImage"
     ]
   },
   "mac": {
-    "icon": "icons/mac/icon.icns",
+    "icon": "assets/images/app-icons/mac/icon.icns",
     "target": [
       "dmg"
     ]
@@ -78,27 +76,20 @@
     "deleteAppDataOnUninstall": true,
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true,
-    "installerIcon": "icons/win/icon.ico",
-    "installerHeaderIcon": "icons/win/icon.ico",
+    "installerIcon": "assets/images/setup-icons/win/icon.ico",
+    "installerHeaderIcon": "assets/images/app-icons/win/icon.ico",
     "uninstallDisplayName": "AroCrypt",
     "include": "assets/scripts/config.nsi",
-    "artifactName": "${productName}-Setup-${version}.${ext}"
-  },
-  "msi": {
-    "artifactName": "${productName}-Setup-${version}.${ext}"
+    "artifactName": "${productName}-Setup-${version}.${ext}",
+    "installerSidebar": "assets/images/setup-icons/sidebar.bmp",
+    "installerHeader": "assets/images/setup-icons/header.bmp",
+    "uninstallerSidebar": "assets/images/setup-icons/sidebar.bmp"
   },
   "portable": {
     "requestExecutionLevel": "admin",
     "artifactName": "${productName}-Portable-${version}.${ext}"
   },
   "extraResources": [
-    {
-      "from": "public/icons",
-      "to": "icons",
-      "filter": [
-        "**/*"
-      ]
-    },
     {
       "from": "public/logo",
       "to": "logo",

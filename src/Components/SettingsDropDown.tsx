@@ -3,7 +3,6 @@ import React, { ReactNode, useEffect, useRef } from "react";
 type Props = {
     label: string;
     isOpen: boolean;
-    upperCase?: boolean;
     setIsOpen: (value: boolean) => void;
     dropdownRef?: React.RefObject<HTMLDivElement>;
     onToggle?: () => void;
@@ -13,7 +12,6 @@ type Props = {
 const SettingsDropDown: React.FC<Props> = ({
     label,
     isOpen,
-    upperCase,
     setIsOpen,
     dropdownRef,
     onToggle,
@@ -54,7 +52,7 @@ const SettingsDropDown: React.FC<Props> = ({
     return (
         <div className="settings_dropdown_container" ref={containerRef}>
             <button
-                className={`settings_dropdown_btn re ${upperCase ? 'uc' : ''}`}
+                className={`settings_dropdown_btn re`}
                 onClick={handleClick}
             >
                 {label}

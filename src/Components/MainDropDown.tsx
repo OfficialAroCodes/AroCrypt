@@ -1,14 +1,12 @@
 import useOpenLink from "@/Utils/openLink";
-import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 interface dropdown {
-  show: any;
+  isShown: boolean;
 }
 
-export default function MainDropDown({ show }: dropdown): JSX.Element {
+export default function MainDropDown({ isShown }: dropdown): JSX.Element {
   const { t } = useTranslation();
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleAboutApp = async () => {
     try {
@@ -20,15 +18,14 @@ export default function MainDropDown({ show }: dropdown): JSX.Element {
 
   return (
     <div
-      ref={dropdownRef}
-      className={`dropdown_menu_box ${show ? "show" : ""}`}
+      className={`dropdown_menu_box ${isShown ? 'show' : ''}`}
     >
       <div className="dropdown_menu">
         <div>
           <button
             className="dropdown_button re"
             onClick={() =>
-              useOpenLink("https://github.com/OfficialAroCodes/arocrypt/")
+              useOpenLink("https://github.com/OfficialAroCodes/AroCrypt/")
             }
           >
             <div className="content">
@@ -80,6 +77,27 @@ export default function MainDropDown({ show }: dropdown): JSX.Element {
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M224,128a96,96,0,1,1-96-96A96,96,0,0,1,224,128Z" opacity="0.2"></path><path d="M140,180a12,12,0,1,1-12-12A12,12,0,0,1,140,180ZM128,72c-22.06,0-40,16.15-40,36v4a8,8,0,0,0,16,0v-4c0-11,10.77-20,24-20s24,9,24,20-10.77,20-24,20a8,8,0,0,0-8,8v8a8,8,0,0,0,16,0v-.72c18.24-3.35,32-17.9,32-35.28C168,88.15,150.06,72,128,72Zm104,56A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"></path></svg>
               {t("about")}
             </div>
+          </button>
+        </div>
+        <span className="dropdown_sepatrator"></span>
+        <div className="social_links">
+          <button
+            className="dropdown_button re"
+            onClick={() =>
+              useOpenLink("https://discord.gg/uwzRmTuH9n")
+            }
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M247.51,174.39,218,58a16.08,16.08,0,0,0-13-11.88l-36.06-5.92a16.22,16.22,0,0,0-18.26,11.88l-.21.85a4,4,0,0,0,3.27,4.93,155.62,155.62,0,0,1,24.41,5.62,8.2,8.2,0,0,1,5.62,9.7,8,8,0,0,1-10.19,5.64,155.4,155.4,0,0,0-90.8-.1,8.22,8.22,0,0,1-10.28-4.81,8,8,0,0,1,5.08-10.33,156.85,156.85,0,0,1,24.72-5.72,4,4,0,0,0,3.27-4.93l-.21-.85A16.21,16.21,0,0,0,87.08,40.21L51,46.13A16.08,16.08,0,0,0,38,58L8.49,174.39a15.94,15.94,0,0,0,9.06,18.51l67,29.71a16.17,16.17,0,0,0,21.71-9.1l3.49-9.45a4,4,0,0,0-3.27-5.35,158.13,158.13,0,0,1-28.63-6.2,8.2,8.2,0,0,1-5.61-9.67,8,8,0,0,1,10.2-5.66,155.59,155.59,0,0,0,91.12,0,8,8,0,0,1,10.19,5.65,8.19,8.19,0,0,1-5.61,9.68,157.84,157.84,0,0,1-28.62,6.2,4,4,0,0,0-3.27,5.35l3.49,9.45a16.18,16.18,0,0,0,21.71,9.1l67-29.71A15.94,15.94,0,0,0,247.51,174.39ZM92,152a12,12,0,1,1,12-12A12,12,0,0,1,92,152Zm72,0a12,12,0,1,1,12-12A12,12,0,0,1,164,152Z"></path></svg>
+            <span className="title">Discord</span>
+          </button>
+          <button
+            className="dropdown_button re"
+            onClick={() =>
+              useOpenLink("https://t.me/arocrypt_channel")
+            }
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M228.88,26.19a9,9,0,0,0-9.16-1.57L17.06,103.93a14.22,14.22,0,0,0,2.43,27.21L72,141.45V200a15.92,15.92,0,0,0,10,14.83,15.91,15.91,0,0,0,17.51-3.73l25.32-26.26L165,220a15.88,15.88,0,0,0,10.51,4,16.3,16.3,0,0,0,5-.79,15.85,15.85,0,0,0,10.67-11.63L231.77,35A9,9,0,0,0,228.88,26.19ZM175.53,208,92.85,135.5l119-85.29Z"></path></svg>
+            <span className="title">Telegram</span>
           </button>
         </div>
       </div>

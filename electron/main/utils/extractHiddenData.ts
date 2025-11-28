@@ -2,18 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { PNG } from 'pngjs';
-import { generateKey, getIVLength } from '../utils/crypto';
-import getKey from './KeyService';
+import { AesKeySlice, generateKey, getIVLength } from '../utils/crypto';
 import { app } from 'electron';
 import { safeWriteLog } from './writeLog';
+import { loadKemKeys } from './KeyService';
+import { MlKem768 } from 'mlkem';
 
-let PRIVATE_KEY: string | null = null;
-
-async function initializeUniqueKey() {
-    safeWriteLog('[initKey] Fetching PRIVATE_KEY...');
-    PRIVATE_KEY = await getKey();
-    safeWriteLog('[initKey] PRIVATE_KEY retrieved: ' + PRIVATE_KEY,);
-}
+const kem = new MlKem768();
 
 export function unpackFiles(buffer: Buffer, outputPath: string): string[] {
     safeWriteLog(`[unpackFiles] Buffer size: ${buffer.length}`);
@@ -57,16 +52,14 @@ export function unpackFiles(buffer: Buffer, outputPath: string): string[] {
     }
 }
 
-export async function extractHiddenData(
+export default async function extractHiddenData(
     imagePath: string,
     method: string
 ): Promise<{ response: string; files: string[] }> {
-    safeWriteLog(`[extractHiddenData] Start`);
-    safeWriteLog(`[extractHiddenData] Image path: ${imagePath}`);
-    safeWriteLog(`[extractHiddenData] Method: ${method}`);
+    safeWriteLog(`[EXTRACT] Image path: ${imagePath}`);
+    safeWriteLog(`[EXTRACT] Method: ${method}`);
 
-    await initializeUniqueKey();
-    if (!PRIVATE_KEY) throw new Error('[extractHiddenData] ❌ No PRIVATE_KEY available');
+    const { PRIVATE_KEY } = await loadKemKeys();
 
     // Create temporary directory
     const tempDir = path.join(app.getPath('temp'), 'arocrypt-extraction');
@@ -78,72 +71,96 @@ export async function extractHiddenData(
         const imageStream = fs.createReadStream(imagePath);
         const png = new PNG();
 
-        png.on('parsed', function () {
+        png.on('parsed', async function () {
             try {
-                safeWriteLog(`[extractHiddenData] PNG parsed`);
-                const bitData: number[] = [];
+                safeWriteLog(`[EXTRACT] PNG parsed`);
 
+                const bitData: number[] = [];
                 for (let i = 0; i < this.data.length; i++) {
                     bitData.push(this.data[i] & 1);
                 }
 
                 const byteData = [];
                 for (let i = 0; i < bitData.length; i += 8) {
-                    const byte = bitData.slice(i, i + 8).reduce((acc, bit, j) => acc | (bit << (7 - j)), 0);
+                    const byte = bitData
+                        .slice(i, i + 8)
+                        .reduce((acc, bit, j) => acc | (bit << (7 - j)), 0);
                     byteData.push(byte);
                 }
 
                 const fullBuffer = Buffer.from(byteData);
+                const payloadBase64 = fullBuffer.toString('utf8').trim();
+                const payload: {
+                    content: string;
+                    iv: string;
+                    salt: string;
+                    kemCiphertext?: string | null;
+                    authTag?: string;
+                    hmac?: string;
+                } = JSON.parse(Buffer.from(payloadBase64, 'base64').toString('utf8'));
 
-                const encryptedLength = fullBuffer.readUInt32BE(0);
-                const ivLength = getIVLength(method);
-                const iv = fullBuffer.slice(4, 4 + ivLength);
-                const salt = fullBuffer.slice(4 + ivLength, 4 + ivLength + 16);
-                const encryptedData = fullBuffer.slice(4 + ivLength + 16, 4 + ivLength + 16 + encryptedLength);
+                const ivBuffer = Buffer.from(payload.iv, 'hex');
+                const saltBuffer = Buffer.from(payload.salt, 'hex');
+                const encryptedData = Buffer.from(payload.content, 'hex');
+                const kemCiphertextBuf = payload.kemCiphertext
+                    ? Uint8Array.from(Buffer.from(payload.kemCiphertext, 'base64'))
+                    : null;
+                const authTag = payload.authTag ? Buffer.from(payload.authTag, 'hex') : null;
 
-                const derivedKey = generateKey({
-                    originalKey: PRIVATE_KEY!,
-                    method,
-                    salt,
-                });
-
-                let usableKey: Buffer;
-                switch (method) {
-                    case 'aes-256-cbc': usableKey = derivedKey.slice(0, 32); break;
-                    case 'aes-192-cbc': usableKey = derivedKey.slice(0, 24); break;
-                    case 'aes-128-cbc': usableKey = derivedKey.slice(0, 16); break;
-                    default: throw new Error('Unsupported encryption method');
+                // Derive AES key
+                let originalKeyForKdf: string;
+                if (kemCiphertextBuf) {
+                    try {
+                        const sharedSecret = await kem.decap(
+                            kemCiphertextBuf,
+                            Uint8Array.from(Buffer.from(PRIVATE_KEY!, 'base64'))
+                        );
+                        originalKeyForKdf = Buffer.from(sharedSecret).toString();
+                    } catch (e) {
+                        safeWriteLog(`[EXTRACT] KEM decapsulation failed: ${(e as Error).message}`);
+                        throw e;
+                    }
+                } else {
+                    originalKeyForKdf = PRIVATE_KEY!;
                 }
 
-                const decipher = crypto.createDecipheriv(method, usableKey, iv);
-                const decrypted = Buffer.concat([decipher.update(encryptedData), decipher.final()]);
-
-                const files = unpackFiles(decrypted, tempDir);
-
-                safeWriteLog(`[extractHiddenData] ✅ Extraction complete. Files: ${files}`);
-                resolve({
-                    response: "OK",
-                    files: files
+                const aesKey = generateKey({
+                    originalKey: originalKeyForKdf,
+                    method,
+                    salt: saltBuffer,
                 });
+
+                // Verify HMAC if non-AEAD
+                if (!/gcm|chacha/i.test(method) && payload.hmac) {
+                    const hmacKey = crypto.createHash('sha256').update(AesKeySlice(method, aesKey)).digest();
+                    const hmac = crypto.createHmac('sha256', hmacKey);
+                    hmac.update(ivBuffer);
+                    hmac.update(saltBuffer);
+                    hmac.update(encryptedData);
+                    if (payload.kemCiphertext) hmac.update(Buffer.from(payload.kemCiphertext, 'base64'));
+                    const digest = hmac.digest('hex');
+                    if (digest !== payload.hmac) throw new Error('HMAC validation failed');
+                }
+
+                const decipher = crypto.createDecipheriv(method, AesKeySlice(method, aesKey), ivBuffer);
+                if (authTag) (decipher as crypto.DecipherGCM).setAuthTag(authTag);
+
+                const decryptedBuffer = Buffer.concat([decipher.update(encryptedData), decipher.final()]);
+                const files = unpackFiles(decryptedBuffer, tempDir);
+
+                safeWriteLog(`[EXTRACT] Extraction complete. Files: ${files}`);
+                resolve({ response: 'OK', files });
             } catch (err) {
-                console.error(`[extractHiddenData] ❌ Error during PNG parse or decryption:`, err);
-                reject({
-                    response: "BAD",
-                    error: err
-                });
+                console.error(`[EXTRACT] Error during extraction/decryption:`, err);
+                reject({ response: 'BAD', error: err });
             }
         });
 
         png.on('error', err => {
-            console.error(`[extractHiddenData] PNG error:`, err);
-            reject({
-                response: "BAD",
-                error: err
-            });
+            console.error(`[EXTRACT] PNG error:`, err);
+            reject({ response: 'BAD', error: err });
         });
 
         imageStream.pipe(png);
     });
 }
-
-export default extractHiddenData;

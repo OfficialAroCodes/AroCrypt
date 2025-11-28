@@ -7,9 +7,10 @@ import {
 import { useTranslation } from "react-i18next";
 import BottomInfo from "@/Components/BottomInfo";
 import SettingsDropDown from "@/Components/SettingsDropDown";
-import KeyProvider from "@/Providers/KeyProvider";
+import { useKeyProvider } from "@/Context/KeysContext";
 
 const Settings = () => {
+    const { openManual } = useKeyProvider();
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { encryptionMethod, decryptionMethod } = useAppSelector(
@@ -17,7 +18,6 @@ const Settings = () => {
     );
 
     // info: States
-    const [isChangingKey, setIsChangingKey] = useState(false);
     const [isEnMenuOpen, setIsEnMenuOpen] = useState(false);
     const [isDeMenuOpen, setIsDeMenuOpen] = useState(false);
 
@@ -41,27 +41,64 @@ const Settings = () => {
                         label={encryptionMethod}
                         isOpen={isEnMenuOpen}
                         setIsOpen={setIsEnMenuOpen}
-                        upperCase={true}
                     >
+                        <span className="group_title">AES-GCM ({t('recommended')})</span>
                         <button
-                            className={`re ${encryptionMethod === "aes-256-cbc" ? "active" : ""
+                            className={`re ${encryptionMethod === "AES-256-GCM" ? "active" : ""
                                 }`}
-                            onClick={() => handleEncryptionMethodChange("aes-256-cbc")}
-                        >
+                            onClick={() => handleEncryptionMethodChange("AES-256-GCM")}>
+                            <p>AES-256-GCM</p>
+                        </button>
+                        <button
+                            className={`re ${encryptionMethod === "AES-192-GCM" ? "active" : ""
+                                }`}
+                            onClick={() => handleEncryptionMethodChange("AES-192-GCM")}>
+                            <p>AES-192-GCM</p>
+                        </button>
+                        <button
+                            className={`re ${encryptionMethod === "AES-128-GCM" ? "active" : ""
+                                }`}
+                            onClick={() => handleEncryptionMethodChange("AES-128-GCM")}>
+                            <p>AES-128-GCM</p>
+                        </button>
+                        <span className="line" />
+                        <span className="group_title">AES-CTR ({t('stream_mode')})</span>
+                        <button
+                            className={`re ${encryptionMethod === "AES-256-CTR" ? "active" : ""
+                                }`}
+                            onClick={() => handleEncryptionMethodChange("AES-256-CTR")}>
+                            <p>AES-256-CTR</p>
+                        </button>
+                        <button
+                            className={`re ${encryptionMethod === "AES-192-CTR" ? "active" : ""
+                                }`}
+                            onClick={() => handleEncryptionMethodChange("AES-192-CTR")}>
+                            <p>AES-192-CTR</p>
+                        </button>
+                        <button
+                            className={`re ${encryptionMethod === "AES-128-CTR" ? "active" : ""
+                                }`}
+                            onClick={() => handleEncryptionMethodChange("AES-128-CTR")}>
+                            <p>AES-128-CTR</p>
+                        </button>
+                        <span className="line" />
+                        <span className="group_title">AES-CBC ({t('legacy')})</span>
+                        <button
+                            className={`re ${encryptionMethod === "AES-256-CBC" ? "active" : ""
+                                }`}
+                            onClick={() => handleEncryptionMethodChange("AES-256-CBC")}>
                             <p>AES-256-CBC</p>
                         </button>
                         <button
-                            className={`re ${encryptionMethod === "aes-192-cbc" ? "active" : ""
+                            className={`re ${encryptionMethod === "AES-192-CBC" ? "active" : ""
                                 }`}
-                            onClick={() => handleEncryptionMethodChange("aes-192-cbc")}
-                        >
+                            onClick={() => handleEncryptionMethodChange("AES-192-CBC")}>
                             <p>AES-192-CBC</p>
                         </button>
                         <button
-                            className={`re ${encryptionMethod === "aes-128-cbc" ? "active" : ""
+                            className={`re ${encryptionMethod === "AES-128-CBC" ? "active" : ""
                                 }`}
-                            onClick={() => handleEncryptionMethodChange("aes-128-cbc")}
-                        >
+                            onClick={() => handleEncryptionMethodChange("AES-128-CBC")}>
                             <p>AES-128-CBC</p>
                         </button>
                     </SettingsDropDown>
@@ -75,50 +112,82 @@ const Settings = () => {
                         label={decryptionMethod}
                         isOpen={isDeMenuOpen}
                         setIsOpen={setIsDeMenuOpen}
-                        upperCase={true}
                     >
+                        <span className="group_title">AES-GCM ({t('recommended')})</span>
                         <button
-                            className={`re ${decryptionMethod === "aes-256-cbc" ? "active" : ""
+                            className={`re ${decryptionMethod === "AES-256-GCM" ? "active" : ""
                                 }`}
-                            onClick={() => handleDecryptionMethodChange("aes-256-cbc")}
-                        >
+                            onClick={() => handleDecryptionMethodChange("AES-256-GCM")}>
+                            <p>AES-256-GCM</p>
+                        </button>
+                        <button
+                            className={`re ${decryptionMethod === "AES-192-GCM" ? "active" : ""
+                                }`}
+                            onClick={() => handleDecryptionMethodChange("AES-192-GCM")}>
+                            <p>AES-192-GCM</p>
+                        </button>
+                        <button
+                            className={`re ${decryptionMethod === "AES-128-GCM" ? "active" : ""
+                                }`}
+                            onClick={() => handleDecryptionMethodChange("AES-128-GCM")}>
+                            <p>AES-128-GCM</p>
+                        </button>
+                        <span className="line" />
+                        <span className="group_title">AES-CTR ({t('stream_mode')})</span>
+                        <button
+                            className={`re ${decryptionMethod === "AES-256-CTR" ? "active" : ""
+                                }`}
+                            onClick={() => handleDecryptionMethodChange("AES-256-CTR")}>
+                            <p>AES-256-CTR</p>
+                        </button>
+                        <button
+                            className={`re ${decryptionMethod === "AES-192-CTR" ? "active" : ""
+                                }`}
+                            onClick={() => handleDecryptionMethodChange("AES-192-CTR")}>
+                            <p>AES-192-CTR</p>
+                        </button>
+                        <button
+                            className={`re ${decryptionMethod === "AES-128-CTR" ? "active" : ""
+                                }`}
+                            onClick={() => handleDecryptionMethodChange("AES-128-CTR")}>
+                            <p>AES-128-CTR</p>
+                        </button>
+                        <span className="line" />
+                        <span className="group_title">AES-CBC ({t('legacy')})</span>
+                        <button
+                            className={`re ${decryptionMethod === "AES-256-CBC" ? "active" : ""
+                                }`}
+                            onClick={() => handleDecryptionMethodChange("AES-256-CBC")}>
                             <p>AES-256-CBC</p>
                         </button>
                         <button
-                            className={`re ${decryptionMethod === "aes-192-cbc" ? "active" : ""
+                            className={`re ${decryptionMethod === "AES-192-CBC" ? "active" : ""
                                 }`}
-                            onClick={() => handleDecryptionMethodChange("aes-192-cbc")}
-                        >
+                            onClick={() => handleDecryptionMethodChange("AES-192-CBC")}>
                             <p>AES-192-CBC</p>
                         </button>
                         <button
-                            className={`re ${decryptionMethod === "aes-128-cbc" ? "active" : ""
+                            className={`re ${decryptionMethod === "AES-128-CBC" ? "active" : ""
                                 }`}
-                            onClick={() => handleDecryptionMethodChange("aes-128-cbc")}
-                        >
+                            onClick={() => handleDecryptionMethodChange("AES-128-CBC")}>
                             <p>AES-128-CBC</p>
                         </button>
                     </SettingsDropDown>
                 </div>
                 <div className="setting_row">
                     <div className="setting_row_textes">
-                        <p className="setting_row_header">{t("private_key")}</p>
-                        <p className="setting_row_info">{t("private_key_info")}</p>
+                        <p className="setting_row_header">{t("manage_keys")}</p>
+                        <p className="setting_row_info">{t("manage_keys_info")}</p>
                     </div>
                     <button
                         className="setting_row_btn re"
-                        onClick={() => setIsChangingKey(true)}
+                        onClick={openManual}
                     >
-                        {t("change")}
+                        {t("manage_keys")}
                     </button>
                 </div>
                 <BottomInfo />
             </div>
-
-            <KeyProvider
-                show={isChangingKey}
-                onClose={() => setIsChangingKey(false)}
-            />
         </>
     );
 };

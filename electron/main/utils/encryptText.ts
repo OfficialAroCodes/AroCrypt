@@ -1,81 +1,89 @@
-import { generateKey, getIVLength } from "./crypto";
+import { AesKeySlice, generateKey, getIVLength } from "./crypto";
 import crypto from "crypto";
-import getKey from "./KeyService";
+import { MlKem768 } from "mlkem";
+import { loadKemKeys } from "./KeyService";
+import { safeWriteLog } from "./writeLog";
 
-let PRIVATE_KEY: string | null = null;
+const kem = new MlKem768();
 
-async function initializeUniqueKey() {
-    PRIVATE_KEY = await getKey();
+interface EncryptedPayload {
+    content: string;
+    iv: string;
+    salt: string;
+    kemCiphertext: string | null;
+    hmac?: string;
+    authTag?: string;
 }
 
-export async function encrypt(text: string, method: string) {
-    console.log("[ENCRYPT] Starting encryption");
+export async function encrypt(
+    text: string,
+    method: string,
+    isShareable: boolean
+): Promise<string> {
+    safeWriteLog(`[ENCRYPT] Starting Text Encryption, isShareable: ${isShareable}`);
 
-    await initializeUniqueKey();
-    if (!PRIVATE_KEY) {
-        console.error("[ENCRYPT] PRIVATE_KEY is null");
-        throw new Error("No unique key found for encryption");
-    }
-    console.log("[ENCRYPT] PRIVATE_KEY loaded");
-
+    const { PUBLIC_KEY, RECIPIENT_KEY } = await loadKemKeys();
     const ivLength = getIVLength(method);
-    const ivBuffer = crypto.randomBytes(ivLength);
+    const iv = crypto.randomBytes(ivLength);
     const salt = crypto.randomBytes(16);
 
-    const keyBuffer = generateKey({
-        originalKey: PRIVATE_KEY,
-        method,
-        salt,
-    });
+    let aesKey: Buffer;
+    let kemCiphertext: string | null = null;
 
-    console.log("[ENCRYPT] IV:", ivBuffer.toString("hex"));
-    console.log("[ENCRYPT] Salt:", salt.toString("hex"));
-    console.log("[ENCRYPT] Key buffer (hex):", keyBuffer.toString("hex"));
+    if (!ivLength) throw new Error("Invalid IV length for selected algorithm.");
+    if ((isShareable && !RECIPIENT_KEY) || (!isShareable && !PUBLIC_KEY)) throw new Error("PROBLEM WITH KEYS!.");
 
-    let cipher;
-    switch (method) {
-        case "aes-256-cbc":
-            cipher = crypto.createCipheriv(method, keyBuffer, ivBuffer);
-            break;
-        case "aes-192-cbc":
-            cipher = crypto.createCipheriv(method, keyBuffer.slice(0, 24), ivBuffer);
-            break;
-        case "aes-128-cbc":
-            cipher = crypto.createCipheriv(method, keyBuffer.slice(0, 16), ivBuffer);
-            break;
-        default:
-            throw new Error("Unsupported encryption method");
+    if (isShareable) {
+        const recipientKeyUint8 = Uint8Array.from(Buffer.from(RECIPIENT_KEY, "base64"));
+        const [ciphertext, sharedSecret] = await kem.encap(recipientKeyUint8);
+        kemCiphertext = Buffer.from(ciphertext).toString("base64");
+
+        aesKey = generateKey({
+            originalKey: Buffer.from(sharedSecret).toString(),
+            method,
+            salt,
+        });
+    } else {
+        const publicKeyUint8 = Uint8Array.from(Buffer.from(PUBLIC_KEY, "base64"));
+        const [ciphertext, sharedSecret] = await kem.encap(publicKeyUint8);
+        kemCiphertext = Buffer.from(ciphertext).toString("base64");
+
+        aesKey = generateKey({
+            originalKey: Buffer.from(sharedSecret).toString(),
+            method,
+            salt,
+        });
     }
+
+    const key = AesKeySlice(method, aesKey);
+    const cipher = crypto.createCipheriv(method, key, iv);
 
     let encrypted = cipher.update(text, "utf8", "hex");
     encrypted += cipher.final("hex");
 
-    const encryptedBuffer = Buffer.from(encrypted, "hex");
-
-    // HMAC key derived by hashing the encryption key for separation
-    const hmacKey = crypto.createHash("sha256").update(keyBuffer).digest();
-    const hmac = crypto.createHmac("sha256", hmacKey);
-    // HMAC over IV + salt + encrypted data
-    hmac.update(ivBuffer);
-    hmac.update(salt);
-    hmac.update(encryptedBuffer);
-    const hmacDigest = hmac.digest("hex");
-
-    console.log("[ENCRYPT] Encrypted content (hex):", encrypted);
-    console.log("[ENCRYPT] HMAC:", hmacDigest);
-
-    // Pack everything as JSON and base64 encode
-    const payload = {
+    const payload: EncryptedPayload = {
         content: encrypted,
-        iv: ivBuffer.toString("hex"),
+        iv: iv.toString("hex"),
         salt: salt.toString("hex"),
-        hmac: hmacDigest,
-        note: "This data only contains public encryption metadata (Encrypted Content, IV, salt, HMAC). It's safe to share. Decryption requires your private key.",
+        kemCiphertext,
     };
 
+    // AEAD (GCM, ChaCha, etc.) → capture auth tag
+    if (/gcm|chacha/i.test(method)) {
+        const tag = (cipher as crypto.CipherGCM).getAuthTag();
+        payload.authTag = tag.toString("hex");
+    } else {
+        const hmacKey = crypto.createHash("sha256").update(key).digest();
+        const hmac = crypto.createHmac("sha256", hmacKey);
+        hmac.update(iv);
+        hmac.update(salt);
+        hmac.update(Buffer.from(encrypted, "hex"));
+        if (kemCiphertext) hmac.update(kemCiphertext);
+        payload.hmac = hmac.digest("hex");
+    }
+
     const packed = Buffer.from(JSON.stringify(payload)).toString("base64");
-    console.log("[ENCRYPT] Packed output:", packed);
-    console.log("-----------------------------------------------");
+    safeWriteLog(`[ENCRYPT] Packed payload Base64: ${packed}`);
 
     return packed;
 }

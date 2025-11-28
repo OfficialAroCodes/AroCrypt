@@ -1,83 +1,139 @@
+interface FileResult {
+  inputPath: string;
+  output: string;
+}
+
+type KyberKeyPair = {
+  secretKey: string;
+  publicKey: string;
+};
+
 interface ElectronAPI {
+  // User Keys
+  getPrivateKey: () => Promise<string | null>;
+  getPublicKey: () => Promise<string | null>;
 
-    // Private Key
-    saveUniqueKey: (key: string) => Promise<boolean>;
-    getUniqueKey: () => Promise<string | null>;
-    noUniqueKey: () => Promise<boolean>;
+  kyberKeyPair: () => Promise<KyberKeyPair>;
+  saveKeys: (secret_key: string, public_key: string, recipient_key: string) => Promise<boolean>;
+  getKeys: () => Promise<{ secret: string; public: string; recipient: string }>;
+  noKeys: () => Promise<boolean>;
 
-    // Text
-    encrypt: (params: { text: string; method: string }) => Promise<any>;
-    decrypt: (params: {
-        packedKeys: string;
-        method: string;
-    }) => Promise<any>;
+  // Text
+  encrypt: (params: { text: string; method: string; isSaveHistory: boolean; isShareable: boolean }) => Promise<any>;
+  decrypt: (params: { packedKeys: string; method: string; isSaveHistory: boolean }) => Promise<any>;
 
-    showSaveDialog: (options: {
-        title?: string;
-        defaultPath?: string;
-    }) => Promise<{
-        canceled: boolean;
-        filePath?: string;
-    }>;
-    encryptFile: (
-        inputPath: string,
-        method: string,
-        outputPath?: string
-    ) => Promise<string>;
+  showSaveDialog: (options: {
+    title?: string;
+    defaultPath?: string;
+  }) => Promise<{
+    canceled: boolean;
+    filePath?: string;
+  }>;
 
-    decryptFile: (filePath: string, method: string) => Promise<string>;
-    openFileDialog: () => Promise<string[]>;
-    openFileDialogD: () => Promise<string[]>;
+  onFilesToDecrypt: (callback: (paths: string[]) => void) => void;
+  onFilesToEncrypt: (callback: (paths: string[]) => void) => void;
 
-    // Embed Data
-    hideData: (
-        imagePath: string,
-        secretFilesPath: string[],
-        method: string,
-        outputPath?: string
-    ) => Promise<string>;
-    selectDataHiderImage: () => Promise<string[]>;
-    selectDataHiderSecretFiles: () => Promise<string[]>;
+  encryptFile: (
+    filesPath: string[],
+    method: string,
+    isDeleteSource: boolean,
+    isSaveHistory: boolean,
+    isSingleOutput: boolean,
+    isShareable: boolean
+  ) => Promise<FileResult[]>;
 
-    // Hidden Data Extraction
-    extractHiddenData: (
-        imagePath: string,
-        method: string,
-        outputPath?: string
-    ) => Promise<string>;
-    selectDataExtractorImage: () => Promise<string[]>;
-    
-    // Utility
-    copyToClipboard: (text: string) => Promise<void>;
-    openExternalLink: (url: string) => void;
-    getAppVersion: () => Promise<string>;
-    getPlatform: () => Promise<string>;
+  decryptFile: (
+    filesPath: string[],
+    method: string,
+    isDeleteSource: boolean,
+    isSaveHistory: boolean,
+    isSingleOutput: boolean
+  ) => Promise<FileResult[]>;
 
-    // Window Control
-    minimizeWindow: () => Promise<void>;
-    closeWindow: () => Promise<void>;
+  extractHiddenData: (
+    filesPath: string[],
+    method: string,
+    isDeleteSource: boolean,
+    isSaveHistory: boolean,
+    isSingleOutput: boolean
+  ) => Promise<FileResult[]>;
 
-    // Update
-    onUpdateAvailable: (callback: (updateInfo: UpdateInfo & { isUpdateAvailable: boolean }) => void) => void;
-    onUpdateNotAvailable: (callback: (updateInfo: UpdateInfo & { isUpdateAvailable: boolean }) => void) => void;
-    onUpdateDownloadProgress: (callback: (progress: { percent: number; transferred: number; total: number; bytesPerSecond: number }) => void) => void;
-    checkForUpdates: () => Promise<UpdateInfo>;
-    downloadUpdate?: () => Promise<void>;
-    openAboutWindow: () => Promise<void>;
+  hideData: (
+    filesPath: string[],
+    secretFilesPath: string[],
+    method: string,
+    isDeleteSource: boolean,
+    isSaveHistory: boolean,
+    isShareable: boolean
+  ) => Promise<FileResult[]>;
+
+  openFileDialog: () => Promise<string[]>;
+  openFileDialogD: () => Promise<string[]>;
+
+  // Embed Data
+  selectDataHiderImage: () => Promise<string[]>;
+  selectDataHiderSecretFiles: () => Promise<string[]>;
+
+  selectDataExtractorImage: () => Promise<string[]>;
+
+  // Utility
+  copyToClipboard: (text: string) => Promise<void>;
+  openExternalLink: (url: string) => void;
+  getAppVersion: () => Promise<string>;
+  getPlatform: () => Promise<string>;
+
+  getLogs: (table: string) => Promise<LogEntry[]>;
+  deleteLog: (args: { table: string; id: string }) => Promise<void>;
+
+  // Window Control
+  maximizeWindow: () => Promise<void>;
+  onMaximize: (callback: (isMax: boolean) => void) => void;
+  minimizeWindow: () => Promise<void>;
+  closeWindow: () => Promise<void>;
+
+  // Update
+  onUpdateAvailable: (
+    callback: (updateInfo: UpdateInfo & { isUpdateAvailable: boolean }) => void
+  ) => void;
+  onUpdateNotAvailable: (
+    callback: (updateInfo: UpdateInfo & { isUpdateAvailable: boolean }) => void
+  ) => void;
+  onUpdateDownloadProgress: (
+    callback: (progress: {
+      percent: number;
+      transferred: number;
+      total: number;
+      bytesPerSecond: number;
+    }) => void
+  ) => void;
+  checkForUpdates: () => Promise<UpdateInfo>;
+  downloadUpdate?: () => Promise<void>;
+  openAboutWindow: () => Promise<void>;
 }
 
 interface UpdateInfo {
-    version: string;
-    files: Array<{
-        url: string;
-        size: number;
-    }>;
-    path?: string;
-    releaseDate?: string;
-    releaseNotes?: string;
-    isUpdateAvailable?: boolean;
+  version: string;
+  files: Array<{
+    url: string;
+    size: number;
+  }>;
+  path?: string;
+  releaseDate?: string;
+  releaseNotes?: string;
+  isUpdateAvailable?: boolean;
+}
+
+interface LogEntry {
+  id: string;
+  timestamp: number;
+  input_path: string;
+  output_path: string;
+  input_size?: number;
+  output_size?: number;
+  status?: string;
+  duration?: number;
 }
 
 interface Window {
-    electronAPI: ElectronAPI;
+  electronAPI: ElectronAPI;
 }

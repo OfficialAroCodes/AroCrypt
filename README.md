@@ -1,10 +1,16 @@
-# 🔐 AroCrypt
+<div align="left">
+    <a href="https://t.me/arocrypt_channel"><img src="https://img.shields.io/static/v1?message=Telegram&logo=telegram&label=&color=2CA5E0&logoColor=white&labelColor=&style=for-the-badge" height="35" alt="Telegram"  /></a>
+  <a href="https://discord.gg/uwzRmTuH9n"><img src="https://img.shields.io/static/v1?message=Discord&logo=Discord&label=&color=5662f6&logoColor=white&labelColor=&style=for-the-badge" height="35" alt="Discord"  /></a>
+  <a href="mailto:app.arocrypt@gmail.com"><img src="https://img.shields.io/static/v1?message=Gmail&logo=gmail&label=&color=D14836&logoColor=white&labelColor=&style=for-the-badge" height="35" alt="Gmail"  /></a>
+    <a href="https://arocrypt.vercel.app"><img src="https://img.shields.io/static/v1?message=website&logo=devbox&label=&color=9a2d0d&logoColor=white&labelColor=&style=for-the-badge" height="35" alt="Official Website"  /></a>
+</div>
+<img width="1980" height="400" alt="banner_dark" src="https://github.com/user-attachments/assets/edd14108-3336-47b3-90f1-a08780511b6a" />
 
-> 🌐 Читать на [Русском](README.ru.md)
 
-**AroCrypt** is a modern, cross-platform encryption tool designed to protect your sensitive data—whether it's text, files, or even embedded within images. With a clean interface and military-grade encryption, AroCrypt makes powerful data protection easy for everyone.
+## AroCrypt Source Code   /    _Читать на [Русском](README.ru.md)_
+AroCrypt is a next-gen, cross-platform encryption toolkit built to keep your data locked down with zero friction. Encrypt text, files, and even images using strong, battle-tested cryptography. The interface stays clean, fast, and developer-friendly while the security stays airtight. Whether you're protecting personal notes or building secure workflows, AroCrypt delivers serious protection without the complexity.
 
-![en_img](https://github.com/user-attachments/assets/4df4dd31-ce1a-4091-b83c-3988eef6812d)
+<img width="1167" height="726" alt="en_dark" src="https://github.com/user-attachments/assets/60f21303-f84d-4593-9800-fa8e09da55b8" />
 
 ---
 
@@ -18,135 +24,143 @@
 | Windows 10           | ✅     | ✅             |
 | Windows 11           | ✅     | ✅             |
 | Linux (Debian-based) | ❌     | ✅             |
-| macOS 11+            | ❌     | ✅ & `(arm64)` |
+| macOS 11+            | ❌     | ✅ and `(arm64)` |
 
 ---
 
 ## 🚀 Features
 
-- **Text Encryption & Decryption**  
-  Secure plain text using strong AES-based encryption and safely share results with packed public key output.
+- **Text Encryption and Decryption**  
+  Secure plain text using strong AES encryption with safe shareable output.
 
-- **File Encryption & Decryption**  
-  Encrypt or decrypt files of any type with reliable AES encryption, outputting `.arocrypt` formatted secure files.
+- **File Encryption and Decryption**  
+  Encrypt or decrypt any file format with reliable AES encryption. Outputs `.arocrypt` secure containers.
 
-- **Image Steganography** 
-  Hide files inside `.png` images with automatic encryption. Only the correct key can extract the original content. Perfect for ultra-discreet file sharing.
+- **Image Steganography**  
+  Hide files inside `.png` images with automatic encryption. Only the correct private key can extract the content.
 
-- **Secure Key Generation & Management**  
-  Automatically generates secure random keys for every operation. Your keys never leave your device.
-
-- **Cross-Platform Support**
-
-  - **Windows** (`x64` & `x32`) — `.exe` Setup & Portable
-  - **Linux** (`x64`) — `.AppImage` & `.deb`
-  - **macOS 11+** (`x64` & `arm64`) — `.dmg`
+- **Cross-Platform Builds**
+  - **Windows** (`x64` and `x32`): `.exe` Setup and Portable
+  - **Linux** (`x64`): `.AppImage` and `.deb`
+  - **macOS 11+** (`x64` and `arm64`): `.dmg`
 
 - **Modern UI**  
-  Sleek, intuitive design built for modern systems and workflows.
+  Clean, responsive design built for fast workflows.
 
-- **Compact & Portable**  
-  No installation required for `.AppImage` or Windows Portable versions — just run and go.
+- **Portable Options**  
+  No installation needed for Windows Portable or `.AppImage`. Just run and go.
+
+- **KEM-based Key Exchange**  
+  AroCrypt includes Key Encapsulation Mechanisms for safer, modern key handling without exposing sensitive data.
+
+- **Improved Encryption Engine**  
+  Faster performance, simplified data packaging, cleaner metadata handling, and upgraded security flows.
 
 ---
 
 ## 💡 How to Use
 
 ### 🔏 Encrypting Text
-
-1. Enter your text in the input field.
+1. Enter your text.
 2. Click **Encrypt**.
-3. Copy the result — it's a Base64-encoded string containing _only_ the public keys, safe to share.
+3. Copy the Base64 Data Package containing public, non-sensitive data.
 
 ### 🔓 Decrypting Text
-
-1. Paste the Base64 public key string.
+1. Paste the Base64 Data Package.
 2. Click **Decrypt** to reveal the original message.
 
-### 📁 Encrypting Files
+---
 
-1. Select the file(s) you want to encrypt.
+### 📁 Encrypting Files
+1. Select the file or files.
 2. Click **Encrypt File(s)**.
-3. You'll get a `.arocrypt` file with embedded encrypted content.
+3. A `.arocrypt` file will be generated.
 
 ### 🗝️ Decrypting Files
-
 1. Select a `.arocrypt` file.
 2. Click **Decrypt File(s)**.
-3. Your original file(s) will be restored.
+3. Your original file or files will be restored.
+
+---
 
 ### 🖼️ Embedding Files into PNG (Steganography)
-
-1. Select a `.png` image (used as a container).
-2. Upload the file(s) you want to hide.
+1. Pick a `.png` container image.
+2. Select the files you want to hide.
 3. Click **Embed File(s)**.
-4. You’ll get a `.png` image that secretly contains your encrypted data.
+4. A new `.png` with encrypted embedded data will be created.
 
 ### 🧩 Extracting Files from PNG
-
-1. Select the `.png` image that has embedded data.
+1. Select the modified `.png` image.
 2. Click **Extract File(s)**.
-3. You'll receive the original encrypted files (you’ll still need the correct decryption key to unlock them).
+3. You will receive the encrypted embedded files. A decryption key is still required to unlock them.
 
 ---
 
 ## 🛡️ Security
 
-AroCrypt uses industry-standard encryption algorithms such as:
+AroCrypt uses industry-standard algorithms:
 
-- **AES-256-CBC**
-- **AES-192-CBC**
-- **AES-128-CBC**
+- **AES-GCM**  
+  - AES-256-GCM  
+  - AES-192-GCM  
+  - AES-128-GCM  
 
-With key/IV randomization and optional HMAC protection for integrity. We’re committed to expanding our supported algorithms in future releases. Your encryption keys are never uploaded or stored.
+- **AES-CBC**  
+  - AES-256-CBC  
+  - AES-192-CBC  
+  - AES-128-CBC  
+
+- **AES-CTR**  
+  - AES-256-CTR  
+  - AES-192-CTR  
+  - AES-128-CTR  
+
+Includes key and IV randomization and HMAC-based integrity checks. GCM uses its own authentication tag to prevent tampering.
+
+Your encryption keys are never uploaded, logged, or stored anywhere.
 
 ---
 
 ## 🧪 Dev Notes
 
 - Built with **Electron.js**, powered by **Node.js** and **React.js**.
-- Entirely written in **TypeScript** for type safety and maintainability.
-- Encryption logic is fully custom, using Node.js crypto APIs — no third-party libraries for core encryption.
-- Portable architecture: runs on Windows, Linux and macOS.
+- Written entirely in **TypeScript**.
+- Encryption logic is fully custom using native Node.js crypto APIs.
+- Cross-platform architecture for Windows, Linux, and macOS.
 
 ---
 
-## 🛠️ How to Install on macOS (Unsigned App Warning)
+## 🛠️ Installing on macOS (Unsigned App)
 
-Since this app isn’t signed with an official Apple Developer ID, macOS will warn you during installation or launch.
+macOS will warn you when opening apps not signed with an Apple Developer ID.
 
-### To install and run the app:
+### To install and open the app:
+1. Download the `.dmg`.
+2. Open the app once and wait for the warning.
+3. Go to `System Preferences` > `Security and Privacy` > `General`.
+4. Click **Open Anyway**.
+5. Confirm the prompt.
 
-1. Download the `.dmg` file.
-2. Open the app — macOS will block it and show a warning like:
-   “App can’t be opened because it is from an unidentified developer.”
-3. To bypass this:
-
-- Open `System Preferences` > `Security` & `Privacy` > `General tab`.
-- You’ll see a message about the blocked app with an “Open Anyway” button. Click it.
-- Confirm when prompted.
-
-4. Alternatively, you can right-click (or `Control` + click) the app and choose Open, then confirm the warning.
+You can also right-click the app and select **Open** to unlock it.
 
 > [!CAUTION]
-> **This warning is a macOS security feature to protect your system. Only bypass if you trust the source.**
+> This warning protects your system. Only bypass it if you trust the source.
 
-### Why no official signing?
+### Why it is unsigned
+- Apple Developer ID certificates cost around 99 dollars per year.
+- AroCrypt is free and open source.
 
-- Official Apple Developer ID certificates cost money **(~$99/year)**.
-- This app is **free** and **open source**, so we rely on you to verify and trust the app yourself.
-
-### For future updates
-
-Check [GitHub releases](https://github.com/OfficialAroCodes/arocrypt/releases/latest) or the [official website](https://arocrypt.vercel.app/download) to download new versions manually.
+### Updating
+Get updates from GitHub Releases or the official site:
+`https://arocrypt.vercel.app/download`
 
 ---
 
 ## 🐛 Reporting Issues
-
-Found a bug or have a suggestion? [Open an issue here](https://github.com/OfficialAroCodes/AroCrypt/issues) and help improve AroCrypt.
+Found a bug or have a feature request? Open an issue here:
+https://github.com/OfficialAroCodes/AroCrypt/issues
 
 ---
 
-🔐 **Secure your files, your secrets, your everything—with AroCrypt.**  
-Made by [AroCodes](https://github.com/OfficialAroCodes) 💻
+🔐 **Protect your files, your secrets, your everything with AroCrypt.**  
+👨‍💻Developed by [AroCodes](https://github.com/OfficialAroCodes)

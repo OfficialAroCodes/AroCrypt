@@ -18,10 +18,10 @@ async function main() {
 
   if (isPathOnWindows && platform === "linux") {
     console.log(
-      "⚠️ You're running the build inside WSL but on a Windows filesystem path."
+      "[!] You're running the build inside WSL but on a Windows filesystem path."
     );
     console.log(
-      "❌ Cannot build for Linux using Windows paths. Move your project to the Linux filesystem (/home)!"
+      "[!] Cannot build for Linux using Windows paths. Move your project to the Linux filesystem (/home)!"
     );
     process.exit(1);
   }
@@ -40,7 +40,7 @@ async function main() {
   try {
     if (isWSL) {
       console.log(
-        "Detected WSL. Building for Linux (no Windows builds inside WSL)."
+        "[?] Detected WSL. Building for Linux (no Windows builds inside WSL)."
       );
       await build({
         config: tempConfigPath,
@@ -49,7 +49,7 @@ async function main() {
         ]),
       });
     } else if (platform === "linux") {
-      console.log("Running on native Linux. Building for Linux...");
+      console.log("[?] Running on native Linux. Building for Linux...");
       await build({
         config: tempConfigPath,
         targets: new Map([
@@ -57,7 +57,7 @@ async function main() {
         ]),
       });
     } else if (platform === "win32") {
-      console.log("Running on Windows. Building for Windows...");
+      console.log("[?] Running on Windows. Building for Windows...");
       await build({
         config: tempConfigPath,
         targets: new Map([
@@ -71,7 +71,7 @@ async function main() {
         ]),
       });
     } else if (platform === "darwin") {
-      console.log("Running on macOS. Building for macOS...");
+      console.log("[?] Running on macOS. Building for macOS...");
       await build({
         config: tempConfigPath,
         targets: new Map([

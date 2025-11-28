@@ -1,25 +1,21 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { Transform, PassThrough } from 'stream';
-import { generateKey, getIVLength } from '../utils/crypto';
+import { PassThrough } from 'stream';
+import { AesKeySlice, generateKey, getIVLength } from '../utils/crypto';
 import { sanitizeFilePath } from './sanitizeFilePath';
-import getKey from './KeyService';
 import { safeWriteLog } from './writeLog';
+import { loadKemKeys } from './KeyService';
+import { MlKem768 } from 'mlkem';
 
-let PRIVATE_KEY: string | null = null;
+const kem = new MlKem768();
 
-async function initializeUniqueKey() {
-    PRIVATE_KEY = await getKey();
-}
-
-export async function encryptFile(inputPath: string, method: string, outputPath?: string): Promise<string> {
+export async function encryptFile(
+    inputPath: string,
+    method: string,
+    outputPath?: string,
+    isShareable: boolean = false): Promise<string> {
     try {
-        await initializeUniqueKey();
-
-        if (!PRIVATE_KEY) {
-            throw new Error('No unique key found for encryption');
-        }
 
         const fullInputPath = sanitizeFilePath(inputPath, false);
 
@@ -27,17 +23,38 @@ export async function encryptFile(inputPath: string, method: string, outputPath?
             throw new Error(`Input file does not exist: ${fullInputPath}`);
         }
 
+        const { PUBLIC_KEY, RECIPIENT_KEY } = await loadKemKeys();
         const ivLength = getIVLength(method);
-        const ivBuffer = crypto.randomBytes(ivLength);
+        const iv = crypto.randomBytes(ivLength);
         const salt = crypto.randomBytes(16);
-        const key = generateKey({ originalKey: PRIVATE_KEY, method, salt });
 
-        safeWriteLog(`[ENCRYPT] IV (hex): ${ivBuffer.toString('hex')}`);
-        safeWriteLog(`[ENCRYPT] Salt (hex): ${salt.toString('hex')}`);
-        safeWriteLog(`[ENCRYPT] Generated key length: ${key.length} bytes`);
+        let aesKey: Buffer;
+        let kemCiphertext: Buffer | null = null;
+
+        if (isShareable) {
+            const recipientKeyUint8 = Uint8Array.from(Buffer.from(RECIPIENT_KEY, "base64"));
+            const [ciphertext, sharedSecret] = await kem.encap(recipientKeyUint8);
+
+            kemCiphertext = Buffer.from(ciphertext);
+
+            aesKey = generateKey({
+                originalKey: Buffer.from(sharedSecret).toString(),
+                method,
+                salt,
+            });
+        } else {
+            const publicKeyUint8 = Uint8Array.from(Buffer.from(PUBLIC_KEY, "base64"));
+            const [ciphertext, sharedSecret] = await kem.encap(publicKeyUint8);
+            kemCiphertext = Buffer.from(ciphertext);
+            aesKey = generateKey({
+                originalKey: Buffer.from(sharedSecret).toString(),
+                method,
+                salt,
+            });
+        }
 
         const fullOutputPath = outputPath
-            ? sanitizeFilePath(outputPath, true)  
+            ? sanitizeFilePath(outputPath, true)
             : `${fullInputPath}.arocrypt`;
 
         safeWriteLog(`[ENCRYPT] Output path: ${fullOutputPath}`);
@@ -46,37 +63,24 @@ export async function encryptFile(inputPath: string, method: string, outputPath?
         fs.mkdirSync(outputDir, { recursive: true });
 
         const inputStream = fs.createReadStream(fullInputPath, {
-            encoding: undefined, 
-            highWaterMark: 64 * 1024 
+            encoding: undefined,
+            highWaterMark: 64 * 1024
         });
 
         // Create a buffer to store the encrypted data
         const chunks: Buffer[] = [];
         const passThrough = new PassThrough();
-        
+
         passThrough.on('data', (chunk: Buffer) => {
             chunks.push(chunk);
         });
 
         let cipher: crypto.Cipher;
+        let key;
 
         try {
-            switch (method) {
-                case 'aes-256-cbc':
-                    cipher = crypto.createCipheriv(method, key, ivBuffer);
-                    break;
-                case 'aes-128-cbc':
-                    cipher = crypto.createCipheriv('aes-128-cbc', key.slice(0, 16), ivBuffer);
-                    break;
-                case 'aes-192-cbc':
-                    cipher = crypto.createCipheriv('aes-192-cbc', key.slice(0, 24), ivBuffer);
-                    break;
-                default:
-                    throw new Error('Unsupported encryption method');
-            }
-
-            cipher.setAutoPadding(true);
-            safeWriteLog(`[ENCRYPT] Cipher created successfully`);
+            key = AesKeySlice(method, aesKey);
+            cipher = crypto.createCipheriv(method, key, iv);
         } catch (cipherError) {
             safeWriteLog(`[ENCRYPT] Cipher creation error: ${cipherError}`);
             throw cipherError;
@@ -87,38 +91,56 @@ export async function encryptFile(inputPath: string, method: string, outputPath?
 
             encryptionStream.on('finish', async () => {
                 try {
-                    // Calculate HMAC
-                    const hmacKey = crypto.createHash('sha256').update(key).digest();
-                    const hmac = crypto.createHmac('sha256', hmacKey);
-                    
-                    // Update HMAC with IV and salt
-                    hmac.update(ivBuffer);
-                    hmac.update(salt);
-                    
-                    // Update HMAC with encrypted data
-                    for (const chunk of chunks) {
-                        hmac.update(chunk);
+                    let authData: Buffer | undefined;
+
+                    if (/gcm|chacha/i.test(method)) {
+                        // GCM / ChaCha modes: get auth tag
+                        authData = (cipher as crypto.CipherGCM).getAuthTag();
+                    } else {
+                        // Other modes: compute HMAC
+                        const hmacKey = crypto.createHash('sha256').update(key).digest();
+                        const hmac = crypto.createHmac('sha256', hmacKey);
+                        hmac.update(iv);
+                        hmac.update(salt);
+
+                        for (const chunk of chunks) {
+                            hmac.update(chunk);
+                        }
+
+                        authData = Buffer.from(hmac.digest('hex'), 'hex');
                     }
-                    
-                    const hmacDigest = hmac.digest('hex');
-                    
+
                     // Write everything to the output file
                     const outputStream = fs.createWriteStream(fullOutputPath);
-                    outputStream.write(ivBuffer);
+                    outputStream.write(iv);
                     outputStream.write(salt);
-                    
+
+                    if (kemCiphertext && kemCiphertext.length > 0) {
+                        const lenBuf = Buffer.alloc(4);
+                        lenBuf.writeUInt32BE(kemCiphertext.length, 0);
+                        outputStream.write(lenBuf);
+                        outputStream.write(kemCiphertext);
+                    } else {
+                        // write zero length
+                        const lenBuf = Buffer.alloc(4);
+                        lenBuf.writeUInt32BE(0, 0);
+                        outputStream.write(lenBuf);
+                    }
+
                     for (const chunk of chunks) {
                         outputStream.write(chunk);
                     }
-                    
-                    outputStream.write(Buffer.from(hmacDigest, 'hex'));
+
+                    if (authData) outputStream.write(authData);
                     outputStream.end();
-                    
+
                     outputStream.on('finish', () => {
                         const outputStats = fs.statSync(fullOutputPath);
                         safeWriteLog(`[ENCRYPT] Encrypted file created: ${fullOutputPath}`);
                         safeWriteLog(`[ENCRYPT] Encrypted file size: ${outputStats.size} bytes`);
-                        safeWriteLog(`[ENCRYPT] HMAC: ${hmacDigest}`);
+                        safeWriteLog(
+                            `${/gcm|chacha/i.test(method) ? 'AuthTag' : 'HMAC'}: ${authData?.toString('hex')}`
+                        );
                         resolve(fullOutputPath);
                     });
                 } catch (error: unknown) {

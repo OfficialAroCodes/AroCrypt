@@ -1,13 +1,16 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import CopyText from "@/Utils/copyText";
 import InlineMessageBox from "./InlineMessageBox";
+import { useClickOutside } from "react-haiku";
 
 interface DecodedKeys {
     content?: string;
     iv?: string;
     salt?: string;
     hmac?: string;
+    authTag? : string;
+    kemCiphertext?: string;
 }
 
 interface ViewUnpackedKeysProps {
@@ -45,7 +48,9 @@ const ViewUnpackedKeys: React.FC<ViewUnpackedKeysProps> = ({
                 content: parsed.content || "",
                 iv: parsed.iv || "",
                 salt: parsed.salt || "",
-                hmac: parsed.hmac || ""
+                hmac: parsed.hmac || "",
+                authTag: parsed.authTag || "",
+                kemCiphertext: parsed.kemCiphertext || ""
             };
         } catch (error) {
             console.error('Error decoding packed keys:', error);
@@ -100,9 +105,8 @@ const ViewUnpackedKeys: React.FC<ViewUnpackedKeysProps> = ({
             />
             {showCopyButton && value && (
                 <button
-                    className={`InputCopyBTN re`}
+                    className={`input_side_button re`}
                     onClick={() => handleCopy(value, field)}
-                    title={`Copy ${label}`}
                     disabled={isLoading}
                 >
                     <svg
@@ -120,40 +124,52 @@ const ViewUnpackedKeys: React.FC<ViewUnpackedKeysProps> = ({
         </div>
     ), [copySuccess, handleCopy, isLoading]);
 
+    const ModalRef = useRef(null);
+
+    const handleClose = () => {
+        onClose(false);
+    }
+
+    useClickOutside(ModalRef, handleClose)
+
     return (
-        <div className="modal_content large">
-            <p className="modal_header">{t("unpacked_public_keys")}</p>
-            <button
-                className="modal_close_btn re"
-                onClick={() => onClose(false)}
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    fill="currentColor"
-                    viewBox="0 0 256 256"
+        <div className={`modal_box ${isShown ? "Show" : ""}`}>
+            <div className="modal_content large" ref={ModalRef}>
+                <p className="modal_header">{t("unpacked_package")}</p>
+                <button
+                    className="modal_close_btn re"
+                    onClick={() => onClose(false)}
                 >
-                    <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path>
-                </svg>
-            </button>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        fill="currentColor"
+                        viewBox="0 0 256 256"
+                    >
+                        <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path>
+                    </svg>
+                </button>
 
-            <InlineMessageBox
-                message={t('safe_to_share')}
-                type={1}
-            />
-
-            {error && (
                 <InlineMessageBox
-                    message={error}
-                    type={3}
+                    message={t('safe_to_share')}
+                    type={1}
                 />
-            )}
 
-            {renderInputField("Content", decodedKeys.content || "", "content", true)}
-            {renderInputField("IV", decodedKeys.iv || "", "iv", true)}
-            {renderInputField("SALT", decodedKeys.salt || "", "salt", true)}
-            {renderInputField("HMAC", decodedKeys.hmac || "", "hmac", true)}
+                {error && (
+                    <InlineMessageBox
+                        message={error}
+                        type={3}
+                    />
+                )}
+
+                {renderInputField("Content", decodedKeys.content || "", "content", true)}
+                {renderInputField("IV", decodedKeys.iv || "", "iv", true)}
+                {renderInputField("SALT", decodedKeys.salt || "", "salt", true)}
+                {decodedKeys.hmac && renderInputField("HMAC", decodedKeys.hmac || "", "hmac", true)}
+                {decodedKeys.authTag && renderInputField("Auth Tag", decodedKeys.authTag || "", "authTag", true)}
+                {renderInputField("KEM Ciphertext", decodedKeys.kemCiphertext || "", "kemCiphertext", true)}
+            </div>
         </div>
     );
 };

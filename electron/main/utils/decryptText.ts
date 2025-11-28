@@ -1,89 +1,89 @@
 import { generateKey } from "./crypto";
-import getKey from "./KeyService";
 import crypto from "crypto";
+import { loadKemKeys } from "./KeyService";
+import { MlKem768 } from "mlkem";
 
-let PRIVATE_KEY: string | null = null;
+const kem = new MlKem768();
 
-async function initializeUniqueKey() {
-    PRIVATE_KEY = await getKey();
+interface EncryptedPayload {
+    content: string;
+    iv: string;
+    salt: string;
+    kemCiphertext: string | null;
+    hmac?: string;
+    authTag?: string;
 }
 
-export async function decrypt(params: {
-    packedKeys: string;
-    method: string;
-}) {
-    console.log("[DECRYPT] Starting decryption with packed keys");
-    console.log("[DECRYPT] packedKeys:" + params.packedKeys);
-    console.log("[DECRYPT] method: " + params.method);
+export async function decrypt(
+    packedData: string,
+    method: string
+): Promise<string> {
+    console.log("[DECRYPT] Starting decryption");
 
-    await initializeUniqueKey();
-
-    if (!PRIVATE_KEY) {
-        console.error("[DECRYPT] PRIVATE_KEY is null");
-        return "invalid";
-    }
+    const { PRIVATE_KEY } = await loadKemKeys();
+    if (!PRIVATE_KEY) throw new Error("[DECRYPT] Private key not found!");
 
     try {
-        // Decode base64 and parse JSON
-        const jsonStr = Buffer.from(params.packedKeys, "base64").toString("utf8");
-        const payload = JSON.parse(jsonStr);
+        const jsonStr = Buffer.from(packedData, "base64").toString("utf8");
+        const payload: EncryptedPayload = JSON.parse(jsonStr);
 
-        const { content, iv, salt, hmac } = payload;
+        console.log("[DECRYPT] Payload:", payload);
 
-        console.log("[DECRYPT] Parsed payload:", payload);
+        const iv = Buffer.from(payload.iv, "hex");
+        const salt = Buffer.from(payload.salt, "hex");
+        const encryptedBuffer = Buffer.from(payload.content, "hex");
 
-        const saltBuffer = Buffer.from(salt, "hex");
-        const ivBuffer = Buffer.from(iv, "hex");
-        const encryptedBuffer = Buffer.from(content, "hex");
+        if (!payload.kemCiphertext) throw new Error("Missing KEM ciphertext!");
 
-        const keyBuffer = generateKey({
-            originalKey: PRIVATE_KEY,
-            method: params.method,
-            salt: saltBuffer,
+        const kemCiphertext = Uint8Array.from(Buffer.from(payload.kemCiphertext, "base64"));
+        const privateKeyUint8 = Uint8Array.from(Buffer.from(PRIVATE_KEY, "base64"));
+        const sharedSecret = await kem.decap(kemCiphertext, privateKeyUint8);
+
+        const aesKey = generateKey({
+            originalKey: Buffer.from(sharedSecret).toString(),
+            method,
+            salt,
         });
 
-        console.log("[DECRYPT] Key buffer (hex):", keyBuffer.toString("hex"));
+        console.log("[DECRYPT] Derived AES key (hex):", aesKey.toString("hex"));
 
-        // HMAC Verification
-        const hmacKey = crypto.createHash("sha256").update(keyBuffer).digest();
-        const hmacCheck = crypto.createHmac("sha256", hmacKey);
-        hmacCheck.update(ivBuffer);
-        hmacCheck.update(saltBuffer);
-        hmacCheck.update(encryptedBuffer);
-        const recalculatedHmac = hmacCheck.digest("hex");
+        const keySlice = aesKey.slice(0, aesKey.length > 32 ? 32 : aesKey.length);
 
-        console.log("[DECRYPT] Recalculated HMAC:", recalculatedHmac);
+        // --- Integrity check before decrypt ---
+        if (/gcm|chacha/i.test(method)) {
+            if (!payload.authTag) throw new Error("[DECRYPT] Missing authTag for AEAD mode!");
+        } else {
+            if (!payload.hmac) throw new Error("[DECRYPT] Missing HMAC for non-AEAD mode!");
 
-        if (recalculatedHmac !== hmac) {
-            console.error("[DECRYPT] HMAC mismatch! 🔥");
-            console.log("-----------------------------------------------");
-            return "invalid";
+            const hmacKey = crypto.createHash("sha256").update(keySlice).digest();
+            const hmac = crypto.createHmac("sha256", hmacKey);
+            hmac.update(iv);
+            hmac.update(salt);
+            hmac.update(encryptedBuffer);
+            if (payload.kemCiphertext) hmac.update(payload.kemCiphertext);
+
+            const computed = hmac.digest("hex");
+            console.log("[DECRYPT] Computed HMAC:", computed);
+            console.log("[DECRYPT] Provided HMAC:", payload.hmac);
+
+            if (computed !== payload.hmac) {
+                throw new Error("HMAC verification failed: data integrity compromised");
+            }
         }
 
-        let decipher;
-        switch (params.method) {
-            case "aes-256-cbc":
-                decipher = crypto.createDecipheriv(params.method, keyBuffer, ivBuffer);
-                break;
-            case "aes-192-cbc":
-                decipher = crypto.createDecipheriv(params.method, keyBuffer.slice(0, 24), ivBuffer);
-                break;
-            case "aes-128-cbc":
-                decipher = crypto.createDecipheriv(params.method, keyBuffer.slice(0, 16), ivBuffer);
-                break;
-            default:
-                console.error("[DECRYPT] Unsupported method");
-                return "invalid";
+        // --- Proceed with decryption ---
+        const decipher = crypto.createDecipheriv(method, keySlice, iv);
+        if (/gcm|chacha/i.test(method)) {
+            (decipher as crypto.DecipherGCM).setAuthTag(Buffer.from(payload.authTag!, "hex"));
         }
 
-        let decrypted = decipher.update(content, "hex", "utf8");
-        decrypted += decipher.final("utf8");
+        let decrypted = decipher.update(encryptedBuffer);
+        decrypted = Buffer.concat([decrypted, decipher.final()]);
 
-        console.log("[DECRYPT] Final decrypted text:", decrypted);
-
-        return decrypted;
+        const finalText = decrypted.toString("utf8");
+        return finalText;
     } catch (error) {
-        console.error("[DECRYPT] Exception occurred:", error);
+        console.error("[DECRYPT] Exception:", error);
         return "invalid";
     }
 }

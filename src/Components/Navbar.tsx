@@ -5,12 +5,18 @@ import { useNav } from "@/Providers/StartupProvider";
 
 const Navbar: React.FC = () => {
   const location = useLocation();
+  const route = location.pathname;
+
   const { t } = useTranslation();
   const { isNavOpen, toggleNav } = useNav();
 
   const [isEnModeOpen, setIsEnModeOpen] = useState(true);
-  const [isDeModeOpen, setIsDeModeOpen] = useState(false);
-  const [isSteganOpen, setSteganOpen] = useState(false);
+  const [isDeModeOpen, setIsDeModeOpen] = useState(true);
+  const [isSteganOpen, setSteganOpen] = useState(true);
+
+  const encryptionPaths = route === "/encryption/file" || route === "/encryption/text" || route === "/";
+  const decryptionPaths = route === "/decryption/file" || route === "/decryption/text";
+  const stegoPaths = route === "/steganography/hide" || route === "/steganography/extract";
 
   return (
     <div className={`nav_position ${isNavOpen ? '' : 'closed'}`}>
@@ -31,7 +37,7 @@ const Navbar: React.FC = () => {
             </div>
             <button
               onClick={() => setIsEnModeOpen(!isEnModeOpen)}
-              className="NavLink re main"
+              className={`NavLink re main ${encryptionPaths ? 'main_active' : ''}`}
             >
               <div className="bcon_big">
                 <div className="content">
@@ -66,7 +72,7 @@ const Navbar: React.FC = () => {
             <div className={`nav_content ${isEnModeOpen && "open"}`}>
               <Link
                 to="/encryption/text"
-                className={`NavLink ${location.pathname === "/encryption/text" || location.pathname === "/" ? "Active" : ""
+                className={`NavLink ${route === "/encryption/text" || route === "/" ? "Active" : ""
                   }`}
               >
                 <div className="bcon">
@@ -89,8 +95,7 @@ const Navbar: React.FC = () => {
               </Link>
               <Link
                 to="/encryption/file"
-                className={`NavLink ${location.pathname === "/encryption/file" ? "Active" : ""
-                  }`}
+                className={`NavLink ${route === "/encryption/file" ? "Active" : ""}`}
               >
                 <div className="bcon">
                   <svg
@@ -113,7 +118,7 @@ const Navbar: React.FC = () => {
             </div>
             <button
               onClick={() => setIsDeModeOpen(!isDeModeOpen)}
-              className="NavLink re main"
+              className={`NavLink re main ${decryptionPaths ? 'main_active' : ''}`}
             >
               <div className="bcon_big">
                 <div className="content">
@@ -148,7 +153,7 @@ const Navbar: React.FC = () => {
             <div className={`nav_content ${isDeModeOpen && "open"}`}>
               <Link
                 to="/decryption/text"
-                className={`NavLink ${location.pathname === "/decryption/text" ? "Active" : ""
+                className={`NavLink ${route === "/decryption/text" ? "Active" : ""
                   }`}
               >
                 <div className="bcon">
@@ -171,7 +176,7 @@ const Navbar: React.FC = () => {
               </Link>
               <Link
                 to="/decryption/file"
-                className={`NavLink ${location.pathname === "/decryption/file" ? "Active" : ""
+                className={`NavLink ${route === "/decryption/file" ? "Active" : ""
                   }`}
               >
                 <div className="bcon">
@@ -195,11 +200,11 @@ const Navbar: React.FC = () => {
             </div>
             <button
               onClick={() => setSteganOpen(!isSteganOpen)}
-              className="NavLink re main"
+              className={`NavLink re main ${stegoPaths ? 'main_active' : ''}`}
             >
               <div className="bcon_big">
                 <div className="content">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M208,40H48a8,8,0,0,0-8,8V208a8,8,0,0,0,8,8h8.69L166.34,106.34a8,8,0,0,1,11.32,0L216,144.69V48A8,8,0,0,0,208,40ZM96,112a16,16,0,1,1,16-16A16,16,0,0,1,96,112Z" opacity="0.2"></path><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM48,48H208v77.38l-24.69-24.7a16,16,0,0,0-22.62,0L53.37,208H48ZM208,208H76l96-96,36,36v60ZM96,120A24,24,0,1,0,72,96,24,24,0,0,0,96,120Zm0-32a8,8,0,1,1-8,8A8,8,0,0,1,96,88Z"></path></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M104,180a28,28,0,1,1-28-28A28,28,0,0,1,104,180Zm76-28a28,28,0,1,0,28,28A28,28,0,0,0,180,152ZM166.11,51.29a8,8,0,0,0-12.7-.29L140.47,66a16,16,0,0,1-24.94,0L102.59,51a8,8,0,0,0-12.7.29L40,120H216Z" opacity="0.2"></path><path d="M248,112H220.08l-47.5-65.41a16,16,0,0,0-25.31-.72l-12.85,14.9-.2.23a7.95,7.95,0,0,1-12.44,0l-.2-.23-12.85-14.9a16,16,0,0,0-25.31.72L35.92,112H8a8,8,0,0,0,0,16H248a8,8,0,0,0,0-16ZM96.34,56l.19.24,12.85,14.89a24,24,0,0,0,37.24,0l12.85-14.89c.06-.08.1-.16.17-.24l40.66,56H55.69ZM180,144a36,36,0,0,0-35.77,32H111.77a36,36,0,1,0-1.83,16h36.12A36,36,0,1,0,180,144ZM76,200a20,20,0,1,1,20-20A20,20,0,0,1,76,200Zm104,0a20,20,0,1,1,20-20A20,20,0,0,1,180,200Z"></path></svg>
                   <p className="NavLinkName">{t('image_steganography')}</p>
                 </div>
                 <span className={`icon ${isSteganOpen && "rotate"}`}>
@@ -218,7 +223,7 @@ const Navbar: React.FC = () => {
             <div className={`nav_content ${isSteganOpen && "open"}`}>
               <Link
                 to="/steganography/hide"
-                className={`NavLink ${location.pathname === "/steganography/hide" ? "Active" : ""
+                className={`NavLink ${route === "/steganography/hide" ? "Active" : ""
                   }`}
               >
                 <div className="bcon">
@@ -229,7 +234,7 @@ const Navbar: React.FC = () => {
               </Link>
               <Link
                 to="/steganography/extract"
-                className={`NavLink ${location.pathname === "/steganography/extract" ? "Active" : ""
+                className={`NavLink ${route === "/steganography/extract" ? "Active" : ""
                   }`}
               >
                 <div className="bcon">
@@ -245,7 +250,7 @@ const Navbar: React.FC = () => {
           <div className="group">
             <Link
               to="/settings"
-              className={`NavLink main ${location.pathname.startsWith("/settings") ? "Active" : ""
+              className={`NavLink main ${route.startsWith("/settings") ? "Active" : ""
                 }`}
             >
               <div className="bcon">
