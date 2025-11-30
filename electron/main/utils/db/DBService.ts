@@ -48,10 +48,12 @@ export async function saveKEMKeyToDB(secret: string, pub: string, recipient: str
   await ensureDBReady();
   await run(`INSERT OR REPLACE INTO kem_keys (id, secret, public, recipient) VALUES (0, ?, ?, ?)`, secret, pub, recipient);
 }
+
 export async function getKeys() {
   await ensureDBReady();
   return all(`SELECT * FROM kem_keys`);
 }
+
 export async function saveHistory(table: string, columns: string[], values: any[]) {
   await ensureDBReady();
   const id = uuidv4();
@@ -61,18 +63,22 @@ export async function saveHistory(table: string, columns: string[], values: any[
   const placeholders = cols.map(() => "?").join(",");
   return run(`INSERT INTO ${table} (${cols.join(",")}) VALUES (${placeholders})`, ...vals);
 }
+
 export async function getLogs(table: string) {
   await ensureDBReady();
   return all(`SELECT * FROM ${table} ORDER BY timestamp DESC`);
 }
+
 export async function deleteLogById(table: string, id: string) {
   await ensureDBReady();
   return run(`DELETE FROM ${table} WHERE id = ?`, id);
 }
+
 export async function deleteAllLogs(table: string) {
   await ensureDBReady();
   return run(`DELETE FROM ${table}`);
 }
+
 export async function nukeAllTables() {
   await ensureDBReady();
   const names: string[] = [];
@@ -212,11 +218,11 @@ async function performResetAndReinit() {
     safeWriteLog(`[DB RESET] unlink error: ${err}`);
   }
 
-  // Reset in-memory state so ensureDBReady will recreate
+  // Reset in-memory state so ensureDBReady will re-create
   db = null;
   initPromise = null;
 
-  // Reinitialize (generates a new key inside init)
+  // Reinitialize (this generates a new key inside init)
   await ensureDBReady();
 }
 

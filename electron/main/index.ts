@@ -58,6 +58,7 @@ process.on("uncaughtException", (error) => {
   app.quit();
 });
 
+
 // Defer autoUpdater configuration
 function configureAutoUpdater() {
   try {
@@ -412,7 +413,7 @@ ipcMain.handle("decrypt", async (event, { packedKeys, method, isSaveHistory }) =
     if (decrypted !== "invalid") {
       if (isSaveHistory) {
         await trySaveHistory(
-          "dtext",
+          "dtext_logs",
           "success",
           "",
           "",
@@ -423,7 +424,7 @@ ipcMain.handle("decrypt", async (event, { packedKeys, method, isSaveHistory }) =
     } else {
       if (isSaveHistory) {
         await trySaveHistory(
-          "dtext",
+          "dtext_logs",
           "fail",
           "",
           "",
@@ -450,7 +451,7 @@ ipcMain.handle("encrypt", async (event, { text, method, isSaveHistory, isShareab
 
     if (isSaveHistory) {
       await trySaveHistory(
-        "etext",
+        "etext_logs",
         "success",
         "",
         "",
@@ -491,7 +492,7 @@ ipcMain.handle(
       });
       if (canceled || !filePaths.length) {
         if (isSaveHistory)
-          await trySaveHistory("efile", "canceled", "", "", method, startTime);
+          await trySaveHistory("efile_logs", "canceled", "", "", method, startTime);
         return [];
       }
       outputFolder = filePaths[0];
@@ -517,7 +518,7 @@ ipcMain.handle(
         if (canceled || !savePath) {
           if (isSaveHistory)
             await trySaveHistory(
-              "efile",
+              "efile_logs",
               "canceled",
               filePath,
               "",
@@ -539,7 +540,7 @@ ipcMain.handle(
         );
         if (isSaveHistory)
           await trySaveHistory(
-            "efile",
+            "efile_logs",
             "success",
             filePath,
             encryptedPath,
@@ -558,7 +559,7 @@ ipcMain.handle(
         console.error("Encryption failed:", err);
         if (isSaveHistory)
           await trySaveHistory(
-            "efile",
+            "efile_logs",
             "canceled",
             filePath,
             finalOutputPath,
@@ -598,7 +599,7 @@ ipcMain.handle(
 
       if (canceled || filePaths.length === 0) {
         if (isSaveHistory) {
-          await trySaveHistory("dfile", "canceled", "N/A", "N/A", method, startTime);
+          await trySaveHistory("dfile_logs", "canceled", "N/A", "N/A", method, startTime);
         }
         return [];
       }
@@ -621,7 +622,7 @@ ipcMain.handle(
         if (validate === "bad_validate") {
           if (isSaveHistory) {
             await trySaveHistory(
-              "dfile",
+              "dfile_logs",
               "fail",
               filePath,
               filePath,
@@ -635,7 +636,7 @@ ipcMain.handle(
       } catch {
         if (isSaveHistory) {
           await trySaveHistory(
-            "dfile",
+            "dfile_logs",
             "fail",
             filePath,
             filePath,
@@ -665,7 +666,7 @@ ipcMain.handle(
         if (canceled || !savePath) {
           if (isSaveHistory) {
             await trySaveHistory(
-              "dfile",
+              "dfile_logs",
               "canceled",
               filePath,
               filePath,
@@ -690,7 +691,7 @@ ipcMain.handle(
         if (decryptedPath === "bad_decrypt") {
           if (isSaveHistory) {
             await trySaveHistory(
-              "dfile",
+              "dfile_logs",
               "fail",
               filePath,
               "",
@@ -701,7 +702,7 @@ ipcMain.handle(
         } else {
           if (isSaveHistory) {
             await trySaveHistory(
-              "dfile",
+              "dfile_logs",
               "success",
               filePath,
               decryptedPath,
@@ -724,7 +725,7 @@ ipcMain.handle(
         console.error("Decryption failed:", err);
         if (isSaveHistory) {
           await trySaveHistory(
-            "dfile",
+            "dfile_logs",
             "canceled",
             filePath,
             finalOutputPath,
@@ -773,7 +774,7 @@ ipcMain.handle(
           results.push({ inputPath: imagePath, output: "canceled" });
           if (isSaveHistory)
             await trySaveHistory(
-              "steg-in",
+              "steg-in_logs",
               "canceled",
               imagePath,
               "N/A",
@@ -790,7 +791,7 @@ ipcMain.handle(
           results.push({ inputPath: imagePath, output: result.response });
           if (isSaveHistory)
             await trySaveHistory(
-              "steg-in",
+              "steg-in_logs",
               "fail",
               imagePath,
               result.response,
@@ -803,7 +804,7 @@ ipcMain.handle(
         results.push({ inputPath: imagePath, output: result.outputPath });
         if (isSaveHistory)
           await trySaveHistory(
-            "steg-in",
+            "steg-in_logs",
             "success",
             imagePath,
             result.outputPath,
@@ -825,7 +826,7 @@ ipcMain.handle(
         console.error("Data hiding error:", error);
         results.push({ inputPath: imagePath, output: "fail" });
         if (isSaveHistory)
-          await trySaveHistory("steg-in", "fail", imagePath, "N/A", method, startTime);
+          await trySaveHistory("steg-in_logs", "fail", imagePath, "N/A", method, startTime);
       }
     }
 
@@ -858,7 +859,7 @@ ipcMain.handle(
 
       if (canceled || filePaths.length === 0) {
         if (isSaveHistory) {
-          await trySaveHistory("steg-out", "canceled", "N/A", "N/A", method, startTime);
+          await trySaveHistory("steg-out_logs", "canceled", "N/A", "N/A", method, startTime);
         }
         return [];
       }
@@ -874,7 +875,7 @@ ipcMain.handle(
           results.push({ inputPath: filePath, output: "BAD_EXTRACT" });
           if (isSaveHistory) {
             await trySaveHistory(
-              "steg-out",
+              "steg-out_logs",
               "fail",
               filePath,
               "N/A",
@@ -905,7 +906,7 @@ ipcMain.handle(
               results.push({ inputPath: filePath, output: "canceled" });
               if (isSaveHistory) {
                 await trySaveHistory(
-                  "steg-out",
+                  "steg-out_logs",
                   "canceled",
                   filePath,
                   "N/A",
@@ -932,7 +933,7 @@ ipcMain.handle(
 
         if (isSaveHistory) {
           await trySaveHistory(
-            "steg-out",
+            "steg-out_logs",
             "success",
             filePath,
             movedPaths.join(","),
@@ -954,7 +955,7 @@ ipcMain.handle(
         console.error("Extraction failed:", err);
         results.push({ inputPath: filePath, output: "fail" });
         if (isSaveHistory) {
-          await trySaveHistory("steg-out", "fail", filePath, "N/A", method, startTime);
+          await trySaveHistory("steg-out_logs", "fail", filePath, "N/A", method, startTime);
         }
       }
     }
