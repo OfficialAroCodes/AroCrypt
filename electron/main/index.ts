@@ -40,16 +40,21 @@ process.on("uncaughtException", (error) => {
   safeWriteLog(`UNCAUGHT EXCEPTION: ${error.message}`);
   safeWriteLog(`STACK TRACE: ${error.stack}`);
 
-  if (error.message.includes("SQLITE_NOTADB")) {
+  if (error.message.includes("SQLITE_NOTADB") ||
+    error.message.includes("database is encrypted") ||
+    error.message.includes("Failed to get database key") ||
+    error.message.includes("Database initialization failed")) {
     dialog.showErrorBox(
       "Database Access Issue",
-      "We couldn’t access your database due to an invalid key or corruption. You can contact support for help: app.arocrypt@gmail.com"
+      "We couldn't access your database due to an invalid key or corruption. The app will attempt to recover by resetting the database.\n\nIf this problem persists, contact support: app.arocrypt@gmail.com"
     );
-    app.relaunch();
-    app.quit();
+
+    // app.relaunch();
+    let quitApp = app.quit();
+    return quitApp;
   }
 
-  dialog.showErrorBox("Critical Error", `${error.message}\n\nThe app will close.`);
+  dialog.showErrorBox("Critical Error", `${error.message}\nThe app will close.\n\nIf this problem persists, contact support: app.arocrypt@gmail.com`);
   app.quit();
 });
 
@@ -318,7 +323,7 @@ app.on("second-instance", (event, argv, workingDirectory) => {
 
     for (let i = 0; i < args.length; i++) {
       const arg = args[i];
-      
+
       // Skip executable paths
       if (arg.includes('AroCrypt.exe') || arg.includes('electron.exe')) {
         continue;
