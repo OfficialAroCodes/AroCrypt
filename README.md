@@ -24,7 +24,7 @@ AroCrypt is a next-gen, cross-platform encryption toolkit built to keep your dat
 | Windows 10           | ✅     | ✅             |
 | Windows 11           | ✅     | ✅             |
 | Linux (Debian-based) | ❌     | ✅             |
-| macOS 11+            | ❌     | ✅ and `(arm64)` |
+| macOS 12+            | ❌     | ✅ and `(arm64)` |
 
 ---
 
@@ -42,7 +42,7 @@ AroCrypt is a next-gen, cross-platform encryption toolkit built to keep your dat
 - **Cross-Platform Builds**
   - **Windows** (`x64` and `x32`): `.exe` Setup and Portable
   - **Linux** (`x64`): `.AppImage` and `.deb`
-  - **macOS 11+** (`x64` and `arm64`): `.dmg`
+  - **macOS 12+** (`x64` and `arm64`): `.dmg`
 
 - **Modern UI**  
   Clean, responsive design built for fast workflows.
