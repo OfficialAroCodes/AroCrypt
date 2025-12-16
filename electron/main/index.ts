@@ -106,26 +106,25 @@ function configureAutoUpdater() {
       win?.webContents.send("update-download-progress", progressObj);
     });
 
-    // IPC handler for checking updates
-    // ipcMain.handle("check-for-updates", async () => {
-    //   try {
-    //     const updateCheckResult = await autoUpdater.checkForUpdates();
-    //     if (updateCheckResult) {
-    //       return {
-    //         version: updateCheckResult.versionInfo.version,
-    //         releaseNotes: updateCheckResult.versionInfo.releaseNotes || "",
-    //         isUpdateAvailable: true,
-    //       };
-    //     }
-    //   } catch (error) {
-    //     safeWriteLog(`Update check error: ${error}`);
-    //     return {
-    //       version: null,
-    //       releaseNotes: "",
-    //       isUpdateAvailable: false,
-    //     };
-    //   }
-    // });
+    ipcMain.handle("check-for-updates", async () => {
+      try {
+        const updateCheckResult = await autoUpdater.checkForUpdates();
+        if (updateCheckResult) {
+          return {
+            version: updateCheckResult.versionInfo.version,
+            releaseNotes: updateCheckResult.versionInfo.releaseNotes || "",
+            isUpdateAvailable: true,
+          };
+        }
+      } catch (error) {
+        safeWriteLog(`Update check error: ${error}`);
+        return {
+          version: null,
+          releaseNotes: "",
+          isUpdateAvailable: false,
+        };
+      }
+    });
 
     ipcMain.handle("download-update", async () => {
       try {
