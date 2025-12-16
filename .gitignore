@@ -11,7 +11,7 @@ node_modules
 dist
 dist-ssr
 dist-electron
-release
+releases
 certs
 temp-electron-builder.json
 *.local
