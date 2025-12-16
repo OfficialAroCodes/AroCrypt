@@ -25,7 +25,7 @@ export default function MainDropDown({ isShown }: dropdown): JSX.Element {
           <button
             className="dropdown_button re"
             onClick={() =>
-              useOpenLink("https://github.com/OfficialAroCodes/AroCrypt/")
+              useOpenLink("https://github.com/AroCrypt/app")
             }
           >
             <div className="content">
@@ -36,7 +36,7 @@ export default function MainDropDown({ isShown }: dropdown): JSX.Element {
           <button
             className="dropdown_button re"
             onClick={() =>
-              useOpenLink("https://github.com/sponsors/OfficialAroCodes")
+              useOpenLink("https://github.com/sponsors/AroCrypt")
             }
           >
             <div className="content">
@@ -61,7 +61,7 @@ export default function MainDropDown({ isShown }: dropdown): JSX.Element {
           <button
             className="dropdown_button re"
             onClick={() =>
-              useOpenLink("https://github.com/OfficialAroCodes/arocrypt/issues")
+              useOpenLink("https://github.com/AroCrypt/app/issues")
             }
           >
             <div className="content">

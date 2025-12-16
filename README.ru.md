@@ -150,12 +150,12 @@ macOS предупреждает о приложениях без Apple Develope
 - AroCrypt бесплатный и открытый.
 
 ### Обновления
-Следите за [релизами на GitHub](https://github.com/OfficialAroCodes/AroCrypt/releases/latest) или [официальный сайт](https://arocrypt.vercel.app/download).
+Следите за [релизами на GitHub](https://github.com/AroCrypt/app/releases/latest) или [официальный сайт](https://arocrypt.vercel.app/download).
 
 ---
 
 ## 🐛 Сообщить об ошибке
-Нашли баг или хотите предложить функцию? [Создайте issue](https://github.com/OfficialAroCodes/AroCrypt/issues)
+Нашли баг или хотите предложить функцию? [Создайте issue](https://github.com/AroCrypt/app/issues)
 
 ---
 

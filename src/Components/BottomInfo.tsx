@@ -10,11 +10,11 @@ const BottomInfo = () => {
     <div className="bottominfo_position">
       <div className="bottominfo">
         <p className="bottominfo_text">
-          <a onClick={() => useOpenLink("https://github.com/OfficialAroCodes/")}>{t("developed_by")} AroCodes</a>
+          <a onClick={() => useOpenLink("https://github.com/OfficialAroCodes")}>{t("developed_by")} AroCodes</a>
           <a
             onClick={() =>
               useOpenLink(
-                "https://github.com/OfficialAroCodes/arocrypt/releases"
+                "https://github.com/AroCrypt/app/releases"
               )
             }
             className="small"

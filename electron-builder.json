@@ -17,8 +17,8 @@
   "publish": [
     {
       "provider": "github",
-      "owner": "OfficialAroCodes",
-      "repo": "AroCrypt",
+      "owner": "AroCrypt",
+      "repo": "app",
       "private": false
     }
   ],

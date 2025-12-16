@@ -1,4 +1,3 @@
-// DBManager.ts
 import path from "path";
 import fs from "fs-extra";
 import { app, dialog } from "electron";

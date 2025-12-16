@@ -158,7 +158,7 @@ Get updates from GitHub Releases or the official site:
 
 ## 🐛 Reporting Issues
 Found a bug or have a feature request? Open an issue here:
-https://github.com/OfficialAroCodes/AroCrypt/issues
+https://github.com/AroCrypt/app/issues
 
 ---
 

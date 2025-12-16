@@ -68,8 +68,8 @@ function configureAutoUpdater() {
 
     autoUpdater.setFeedURL({
       provider: "github",
-      owner: "OfficialAroCodes",
-      repo: "arocrypt",
+      owner: "AroCrypt",
+      repo: "app",
     });
 
     autoUpdater.logger = {
